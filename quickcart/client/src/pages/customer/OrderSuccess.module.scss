@@ -1,0 +1,41 @@
+.successPage {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 40px;
+  text-align: center;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.icon {
+  font-size: 4rem;
+  color: green;
+}
+
+.title {
+  font-size: 2rem;
+  margin: 20px 0 10px 0;
+}
+
+.message {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.orderId {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 30px;
+  word-break: break-all;
+}
+
+.link {
+  text-decoration: none;
+  background: blue;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+}

@@ -1,0 +1,20 @@
+{
+  "name": "quickcart",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev:client": "yarn workspace client dev",
+    "dev:server": "cd server && dotenv -e ./prisma/.env -- ts-node-dev --respawn --transpile-only src/server.ts",
+    "prisma:migrate": "cd server && dotenv -e ./prisma/.env -- prisma migrate dev",
+    "prisma:generate": "cd server && dotenv -e ./prisma/.env -- prisma generate",
+    "prisma:studio": "cd server && dotenv -e ./prisma/.env -- prisma studio",
+    "seed": "cd server && dotenv -e ./prisma/.env -- prisma db seed"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0"
+  }
+}

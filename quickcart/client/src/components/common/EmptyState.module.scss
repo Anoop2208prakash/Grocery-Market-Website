@@ -1,0 +1,23 @@
+/* Styles for the EmptyState component */
+.emptyState {
+  text-align: center;
+  padding: 60px 40px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-top: 20px;
+
+  .title {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+  }
+
+  .message {
+    margin: 0 0 20px 0;
+    color: #666;
+  }
+
+  .action {
+    /* This empty class is a container for the children */
+  }
+}

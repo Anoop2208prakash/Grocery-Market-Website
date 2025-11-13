@@ -1,0 +1,44 @@
+.page {
+  max-width: 800px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+.summary, .actions {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+}
+.summary h3, .actions h3 {
+  margin-top: 0;
+}
+.itemsList {
+  margin-top: 20px;
+  h4 { border-bottom: 1px solid #eee; padding-bottom: 8px; }
+}
+.item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.statusSelect {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+.saveButton {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: blue;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover { background: darkblue; }
+}
