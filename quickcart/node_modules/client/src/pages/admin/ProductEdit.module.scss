@@ -1,0 +1,120 @@
+/* client/src/pages/admin/ProductEdit.module.scss */
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+}
+
+/* vvv UPDATED HEADER STYLES vvv */
+.header {
+  display: flex;
+  justify-content: space-between; /* Title Left, Link Right */
+  align-items: center;
+  
+  border-bottom: 3px solid #F0E491; /* Cream Accent */
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+  margin-top: 0;
+
+  h2 {
+    margin: 0;
+    color: #31694E; /* Dark Green */
+    font-size: 1.8rem;
+  }
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  color: #666;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+  /* Removed margin-bottom */
+
+  &:hover {
+    color: #31694E; /* Dark Green */
+    text-decoration: underline;
+  }
+}
+/* ^^^ END UPDATED HEADER STYLES ^^^ */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+  }
+
+  input, select, textarea {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    background-color: #fdfdfd;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #658C58; /* Medium Green */
+      box-shadow: 0 0 0 3px rgba(101, 140, 88, 0.1);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+.error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: 1px solid #fca5a5;
+}
+
+.submitButton {
+  margin-top: 10px;
+  padding: 14px;
+  background-color: #31694E; /* Dark Green */
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s;
+
+  &:hover {
+    background-color: #244f3a; /* Darker Green */
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+}

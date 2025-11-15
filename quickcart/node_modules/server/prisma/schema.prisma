@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------
+// USER & AUTH MODELS
+// ------------------------------------
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Will be a hashed password
+  name      String?
+  phone     String?
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+  cart      Cart?
+
+  deliveries Delivery[] 
+}
+
+enum UserRole {
+  CUSTOMER
+  DRIVER
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Address {
+  id     String @id @default(cuid())
+  street String
+  city   String
+  zip    String
+  lat    Float? // Latitude for mapping
+  lng    Float? // Longitude for mapping
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------------------
+// CORE PRODUCT & INVENTORY MODELS
+// ------------------------------------
+model DarkStore {
+  id        String     @id @default(cuid())
+  name      String     // e.g., "Urban Core - Zone 1"
+  address   String
+  lat       Float
+  lng       Float
+  inventory StockItem[]
+  orders    Order[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  sku         String    @unique // Stock Keeping Unit
+  name        String
+  description String?   @db.Text
+  price       Float
+  imageUrl    String?
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  stockItems  StockItem[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+}
+
+// This "join table" tracks how many of each product
+// are in which dark store.
+model StockItem {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  darkStoreId String
+  darkStore   DarkStore @relation(fields: [darkStoreId], references: [id])
+  quantity    Int      @default(0) // The actual stock level
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, darkStoreId])
+}
+
+// ------------------------------------
+// ORDERING & CART MODELS
+// ------------------------------------
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  darkStoreId   String      // Which dark store fulfilled it
+  darkStore     DarkStore   @relation(fields: [darkStoreId], references: [id])
+  status        OrderStatus @default(PENDING)
+  totalPrice    Float
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  items         OrderItem[]
+  delivery      Delivery?
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float   // Price at the time of purchase
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+// ------------------------------------
+// DELIVERY & DRIVER MODELS
+// ------------------------------------
+model Delivery {
+  id            String        @id @default(cuid())
+  orderId       String        @unique
+  order         Order         @relation(fields: [orderId], references: [id])
+  driverId      String?       // Driver can be null initially
+  driver        User?         @relation(fields: [driverId], references: [id])
+  status        OrderStatus
+  pickedUpAt    DateTime?
+  deliveredAt   DateTime?
+  
+  // For live tracking
+  driverLat     Float?
+  driverLng     Float?
+}

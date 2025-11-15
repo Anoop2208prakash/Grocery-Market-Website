@@ -1,0 +1,22 @@
+/* Styles for the DataGrid component */
+.dataGrid {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  th,
+  td {
+    padding: 12px;
+    border: 1px solid #ddd;
+  }
+
+  th {
+    background-color: #f4f4f4;
+    text-align: left;
+  }
+
+  /* Add a subtle hover effect */
+  tbody tr:hover {
+    background-color: #f9f9f9;
+  }
+}
