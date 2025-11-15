@@ -1,0 +1,88 @@
+.formContainer {
+  max-width: 700px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+
+  h2 {
+    margin-top: 0;
+    color: #31694E;
+    border-bottom: 2px solid #F0E491;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+  }
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #666;
+  text-decoration: none;
+  font-weight: 500;
+  
+  &:hover {
+    color: #31694E;
+    text-decoration: underline;
+  }
+}
+
+.formGroup {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #658C58;
+      box-shadow: 0 0 0 3px rgba(101, 140, 88, 0.1);
+    }
+  }
+}
+
+.submitButton {
+  background-color: #31694E;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: #658C58;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+.error {
+  padding: 12px;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #fca5a5;
+}

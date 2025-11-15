@@ -1,0 +1,25 @@
+/* client/src/pages/customer/MyOrders.module.scss */
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+
+  h2 {
+    color: #31694E; /* Dark Green */
+    font-size: 2rem;
+    margin-bottom: 20px;
+    border-bottom: 3px solid #F0E491; /* Cream accent */
+    padding-bottom: 10px;
+    display: inline-block;
+  }
+}
+
+/* We can add a subtle wrapper around the grid if needed */
+.gridWrapper {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid #eee;
+}

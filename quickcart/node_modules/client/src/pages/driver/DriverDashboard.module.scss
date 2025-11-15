@@ -1,0 +1,159 @@
+/* client/src/pages/driver/DriverDashboard.module.scss */
+
+.dashboardContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  border-bottom: 3px solid #F0E491; /* Cream accent */
+  padding-bottom: 20px;
+
+  h1 {
+    margin: 0;
+    color: #31694E; /* Dark Green */
+    font-size: 2rem;
+    font-weight: 800;
+  }
+}
+
+.logoutButton {
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #31694E;
+  border: 2px solid #31694E;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #31694E;
+    color: white;
+  }
+}
+
+.section {
+  margin-bottom: 50px;
+
+  h2 {
+    color: #31694E;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    border-left: 5px solid #BBC863; /* Olive border */
+    padding-left: 15px;
+  }
+}
+
+.cardGrid {
+  display: grid;
+  gap: 20px;
+}
+
+/* Base Card Style */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #eee;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  h3 {
+    margin: 0;
+    color: #31694E;
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 0.95rem;
+  }
+}
+
+/* "My Active Deliveries" Card Variant */
+.activeCard {
+  @extend .card;
+  border: 2px solid #658C58; /* Medium Green border */
+  background-color: #FDFDF5; /* Very light cream background */
+
+  h3 {
+    color: #244f3a;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.statusBadge {
+  background-color: #F0E491; /* Cream */
+  color: #31694E;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Buttons */
+.actionButton {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.acceptButton {
+  @extend .actionButton;
+  background-color: #31694E; /* Dark Green */
+  color: white;
+
+  &:hover {
+    background-color: #244f3a;
+  }
+}
+
+.completeButton {
+  @extend .actionButton;
+  background-color: #658C58; /* Medium Green */
+  color: white;
+
+  &:hover {
+    background-color: #4e7042;
+  }
+}
+
+.emptyMessage {
+  color: #888;
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px dashed #ddd;
+}

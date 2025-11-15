@@ -1,0 +1,107 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #31694E; /* Dark Green */
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #658C58;
+  flex-shrink: 0;
+
+  .brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    padding: 25px;
+    color: #F0E491; /* Cream */
+    text-decoration: none;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  nav {
+    padding: 20px 10px;
+    flex-grow: 1;
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      display: block;
+      padding: 12px 15px;
+      color: #e0e0e0;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #658C58; /* Medium Green */
+        color: white;
+        transform: translateX(5px);
+      }
+
+      /* You can add an .active class logic in your component later */
+      &.active {
+        background-color: #F0E491; /* Cream */
+        color: #31694E; /* Dark Text */
+        font-weight: 700;
+      }
+    }
+  }
+
+  .footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.85rem;
+    color: #BBC863; /* Olive */
+    text-align: center;
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 30px;
+  background-color: #FDFDF5;
+  overflow-y: auto;
+}
+
+.logoutButton {
+  /* Positioning */
+  display: block;
+  margin: 0 10px 10px 10px; /* Aligns with nav, adds space above footer */
+  padding: 12px 15px;
+  
+  /* Appearance */
+  background: #BBC863; /* Olive */
+  color: #31694E; /* Dark Green text */
+  border: none;
+  border-radius: 8px;
+  
+  /* Text */
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: left;
+  width: calc(100% - 20px); /* Full width minus margins */
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #F0E491; /* Cream */
+    color: #31694E;
+  }
+}
+
