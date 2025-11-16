@@ -1,13 +1,71 @@
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px 0;
+/* client/src/pages/customer/Home.module.scss */
+
+/* This is the large carrot image at the top */
+.banner {
+  width: 100%;
+  height: 250px;
+  background-image: url('src/assets/banner.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 16px;
+  margin-bottom: 30px;
 }
 
-.loading,
-.error {
-  text-align: center;
-  padding: 50px;
-  font-size: 1.2rem;
+.categorySection {
+  margin-bottom: 40px;
+}
+
+/* --- vvv THIS IS THE UPDATED SECTION vvv --- */
+
+/* 1. This is the new flex container for the header */
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-left: 5px solid #31694E; /* Brand Green */
+  padding-left: 15px;
+}
+
+/* 2. This is just the text */
+.categoryTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0; /* Remove default margins */
+}
+
+/* 3. This is the new "see all" button */
+.seeAllButton {
+  background-color: #31694E;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: #658C58;
+  }
+}
+/* --- ^^^ END UPDATED SECTION ^^^ --- */
+
+
+/* This is the key for horizontal scrolling */
+.productRow {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 20px;
+  padding: 10px 5px; /* Add padding so shadows aren't cut off */
+  
+  /* Hides the scrollbar but keeps it scrollable */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

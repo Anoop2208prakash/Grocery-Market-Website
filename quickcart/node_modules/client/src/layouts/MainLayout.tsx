@@ -7,27 +7,34 @@ import styles from './MainLayout.module.scss';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import LocationModal from '../components/layout/LocationModal';
 
-// --- SVG icon component for Search ---
-const SearchIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    className={styles.searchIcon}
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8"></circle>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-  </svg>
-);
+// --- 1. IMPORT FONT AWESOME ---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faSearch,
+  faChevronDown,
+  faCarrot,
+  faAppleWhole,
+  faEgg,
+  faBreadSlice,
+  faFish,
+  faGlassWater,
+  faCookieBite,
+  faWarehouse
+} from '@fortawesome/free-solid-svg-icons';
+// --- END IMPORTS ---
 
-// --- Added Arrow Down Icon ---
-const ArrowDownIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9"></polyline>
-  </svg>
-);
+// --- 2. Data for the Category Bar (Updated Links) ---
+const categoryNavData = [
+  // These links now match your seed.ts and router.tsx
+  { name: 'Vegetables', icon: <FontAwesomeIcon icon={faCarrot} size="xl" />, link: '/category/Vegetables' },
+  { name: 'Fruits', icon: <FontAwesomeIcon icon={faAppleWhole} size="xl" />, link: '/category/Fruits' },
+  { name: 'Dairy & Eggs', icon: <FontAwesomeIcon icon={faEgg} size="xl" />, link: '/category/Dairy & Eggs' },
+  { name: 'Bakery', icon: <FontAwesomeIcon icon={faBreadSlice} size="xl" />, link: '/category/Bakery' },
+  { name: 'Meat & Fish', icon: <FontAwesomeIcon icon={faFish} size="xl" />, link: '/category/Meat & Fish' },
+  { name: 'Beverages', icon: <FontAwesomeIcon icon={faGlassWater} size="xl" />, link: '/category/Beverages' },
+  { name: 'Snacks', icon: <FontAwesomeIcon icon={faCookieBite} size="xl" />, link: '/category/Snacks' },
+  { name: 'Pantry', icon: <FontAwesomeIcon icon={faWarehouse} size="xl" />, link: '/category/Pantry' },
+];
 
 const MainLayout = () => {
   const { itemCount } = useCart();
@@ -43,8 +50,6 @@ const MainLayout = () => {
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // --- 2. Add state for the search query ---
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = () => {
@@ -76,22 +81,21 @@ const MainLayout = () => {
     };
   }, [isDropdownOpen]);
 
-  // --- 3. Handle search form submission ---
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim().length === 0) {
-      return; // Don't search for nothing
+      return;
     }
-    // Navigate to a new search page with the query
     navigate(`/search?q=${searchQuery}`);
-    setSearchQuery(''); // Clear the search bar
+    setSearchQuery('');
   };
 
   return (
     <div>
+      {/* 1. Main Navbar */}
       <nav className={styles.navbar}>
         
-        {/* 1. Left Section */}
+        {/* Left Section */}
         <div className={styles.brandSection}>
           <Link to="/" className={styles.navBrand}>QuickCart</Link>
           <div 
@@ -100,13 +104,13 @@ const MainLayout = () => {
             style={{ cursor: 'pointer' }}
           >
             <h4>Delivery in 10 minutes</h4>
-            <span>{locationName} <ArrowDownIcon /></span>
+            <span>{locationName} <FontAwesomeIcon icon={faChevronDown} size="xs" /></span>
           </div>
         </div>
 
-        {/* 2. Middle Section (Updated to a Form) */}
+        {/* Middle Section (Search) */}
         <form className={styles.searchContainer} onSubmit={handleSearchSubmit}>
-          <SearchIcon />
+          <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
           <input 
             type="text" 
             placeholder='Search "bread"' 
@@ -116,7 +120,7 @@ const MainLayout = () => {
           />
         </form>
 
-        {/* 3. Right Section */}
+        {/* Right Section (Profile/Cart) */}
         <div className={styles.navLinks}>
           {user && (
             <>
@@ -151,6 +155,18 @@ const MainLayout = () => {
             Cart <span className={styles.cartCount}>{itemCount}</span>
           </Link>
         </div>
+      </nav>
+
+      {/* 2. CATEGORY BAR (Using <Link>) */}
+      <nav className={styles.categoryBar}>
+        {categoryNavData.map((item) => (
+          <Link to={item.link} key={item.name} className={styles.categoryItem}>
+            <div className={styles.iconWrapper}>
+              {item.icon}
+            </div>
+            <span>{item.name}</span>
+          </Link>
+        ))}
       </nav>
 
       <main style={{ padding: '20px 30px' }}>

@@ -2,7 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import apiClient from '../../services/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { useToast } from '../../contexts/ToastContext'; // <-- 1. Import Toast
+import { useToast } from '../../contexts/ToastContext';
 import styles from './ProductCreate.module.scss';
 
 // Type for the categories
@@ -25,16 +25,15 @@ const ProductCreate = () => {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
-  const { showToast } = useToast(); // <-- 2. Get Hook
+  const { showToast } = useToast();
 
-  // Fetch categories for the dropdown
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const { data } = await apiClient.get('/categories');
-        setCategories(data);
+        setCategories(data); // This will fetch all 8 categories
         if (data.length > 0) {
-          setCategoryId(data[0].id);
+          setCategoryId(data[0].id); // Default to the first one
         }
       } catch (err) {
         console.error(err);
@@ -51,30 +50,17 @@ const ProductCreate = () => {
 
     try {
       await apiClient.post('/products', {
-        name,
-        sku,
-        price,
-        description,
-        categoryId,
-        stock,
+        name, sku, price, description, categoryId, stock,
       });
       setLoading(false);
-      
-      // 3. Show Success Toast
       showToast('Product created successfully!', 'success');
-      
       navigate('/admin/inventory');
     } catch (err) {
       console.error(err);
       let message = 'Failed to create product';
-      if (err instanceof AxiosError && err.response?.data?.message) {
-        message = err.response.data.message;
-      }
+      if (err instanceof AxiosError) message = err.response?.data?.message;
       setError(message);
-      
-      // 4. Show Error Toast
       showToast(message, 'error');
-      
       setLoading(false);
     }
   };
@@ -116,18 +102,21 @@ const ProductCreate = () => {
           />
         </div>
 
+        {/* --- This is the Dropdown --- */}
         <div className={styles.formGroup}>
           <label>Category</label>
           <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             {categories.length === 0 ? (
               <option>Loading categories...</option>
             ) : (
+              // All 8 categories will be mapped here
               categories.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))
             )}
           </select>
         </div>
+        {/* --- End Dropdown --- */}
         
         <div className={styles.formGroup}>
           <label>Description</label>

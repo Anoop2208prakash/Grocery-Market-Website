@@ -1,22 +1,25 @@
+/* client/src/components/common/ProductCard.module.scss */
 .card {
+  width: 220px; 
+  flex-shrink: 0; 
   border: 1px solid #eee;
-  border-radius: 12px; /* Softer corners */
+  border-radius: 12px;
   padding: 16px;
-  text-align: center;
+  text-align: left; /* <-- 1. CHANGED: Text is left-aligned */
   background-color: #fff;
   box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-bottom: 4px solid transparent;
-
+  transition: box-shadow 0.2s ease;
+  
   &:hover {
-    transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    border-bottom-color: #BBC863; /* Olive border on hover */
   }
 
   .imageWrapper {
     height: 150px;
     margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     
     img {
       height: 100%;
@@ -27,33 +30,34 @@
   }
 
   .name {
-    font-size: 1.1rem;
+    font-size: 0.95rem; /* <-- 2. CHANGED: Smaller font */
     font-weight: 600;
     margin: 0 0 8px 0;
-    color: #31694E; /* Dark Green text */
+    color: #333; /* <-- 3. CHANGED: Darker text */
   }
 
   .price {
-    font-size: 1.2rem;
+    font-size: 1.1rem; /* <-- 4. CHANGED: Smaller font */
     font-weight: bold;
-    color: #658C58; /* Medium Green */
+    color: #333; /* <-- 5. CHANGED: Darker text */
     margin-bottom: 15px;
   }
 
+  /* --- 6. UPDATED BUTTON STYLE --- */
   .addButton {
     width: 100%;
     padding: 10px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700; /* Bolder */
     cursor: pointer;
     border: none;
-    border-radius: 6px;
-    background-color: #31694E; /* Dark Green */
-    color: white; // Cream text looks good too, but white is cleaner here
+    border-radius: 8px; /* Softer radius */
+    background-color: #22c55e; /* Bright Green */
+    color: white;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: #658C58; /* Medium Green */
+      background-color: #16a34a; /* Darker Bright Green */
     }
   }
 }
