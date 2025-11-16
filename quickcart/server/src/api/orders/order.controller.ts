@@ -12,17 +12,12 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
   const orders = await prisma.order.findMany({
     include: {
       user: {
-        select: {
-          name: true,
-          email: true,
-        },
+        select: { name: true, email: true },
       },
       items: {
         include: {
           product: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
       },
@@ -54,12 +49,11 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     throw new Error('No items in cart');
   }
 
-  // Hardcoded Dark Store ID (Matches seed.ts)
-  const darkStoreId = 'clxvw2k9w000008l41111aaaa';
+  const darkStoreId = 'clxvw2k9w000008l41111aaaa'; // Hardcoded Dark Store ID
 
   try {
     const newOrder = await prisma.$transaction(async (tx) => {
-      // 1. CHECK STOCK for all items first
+      // 1. CHECK STOCK
       for (const item of cartItems) {
         const stockItem = await tx.stockItem.findUnique({
           where: {
@@ -75,7 +69,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
         }
       }
 
-      // 2. CREATE the Order
+      // 2. CREATE Order
       const order = await tx.order.create({
         data: {
           userId: userId,
@@ -246,6 +240,63 @@ export const getOrderStats = asyncHandler(async (req: AuthRequest, res: Response
       query = `
         SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-01-01') as date
         FROM \`order\` WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 5 YEAR
+        GROUP BY YEAR(\`createdAt\`)
+        ORDER BY YEAR(\`createdAt\`) ASC;
+      `;
+      break;
+    case 'monthly':
+    default:
+      query = `
+        ${baseQuery} AND \`createdAt\` >= CURDATE() - INTERVAL 12 MONTH
+        GROUP BY DATE_FORMAT(\`createdAt\`, '%Y-%m-01')
+        ORDER BY DATE_FORMAT(\`createdAt\`, '%Y-%m-01') ASC;
+      `;
+      break;
+  }
+
+  const results = await prisma.$queryRawUnsafe(query);
+  
+  const stringifiedResults = (results as any[]).map(item => ({
+    ...item,
+    total: item.total ? item.total.toString() : '0',
+    date: item.date ? item.date.toString() : 'N/A'
+  }));
+
+  res.json(stringifiedResults);
+});
+
+/**
+ * @desc    Get order COUNT statistics for charts
+ * @route   GET /api/orders/stats/count
+ * @access  Private/Admin
+ */
+export const getOrderCountStats = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { period } = req.query;
+  let query;
+  
+  // Base query now counts orders, and counts ALL statuses
+  const baseQuery = "SELECT COUNT(id) as total, DATE_FORMAT(`createdAt`, '%Y-%m-%d') as date FROM `order` WHERE 1=1";
+
+  switch (period) {
+    case 'daily':
+      query = `
+        ${baseQuery} AND \`createdAt\` >= CURDATE() - INTERVAL 7 DAY
+        GROUP BY DATE(\`createdAt\`)
+        ORDER BY DATE(\`createdAt\`) ASC;
+      `;
+      break;
+    case 'weekly':
+      query = `
+        SELECT COUNT(id) as total, DATE_FORMAT(DATE_SUB(\`createdAt\`, INTERVAL WEEKDAY(\`createdAt\`) DAY), '%Y-%m-%d') as date
+        FROM \`order\` WHERE \`createdAt\` >= CURDATE() - INTERVAL 12 WEEK
+        GROUP BY YEARWEEK(\`createdAt\`)
+        ORDER BY YEARWEEK(\`createdAt\`) ASC;
+      `;
+      break;
+    case 'yearly':
+      query = `
+        SELECT COUNT(id) as total, DATE_FORMAT(\`createdAt\`, '%Y-01-01') as date
+        FROM \`order\` WHERE \`createdAt\` >= CURDATE() - INTERVAL 5 YEAR
         GROUP BY YEAR(\`createdAt\`)
         ORDER BY YEAR(\`createdAt\`) ASC;
       `;

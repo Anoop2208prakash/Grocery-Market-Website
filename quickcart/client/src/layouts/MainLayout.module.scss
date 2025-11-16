@@ -10,7 +10,6 @@
   border-bottom: 4px solid #BBC863; /* Olive accent */
 }
 
-/* 1. Left Side: Logo + Delivery */
 .brandSection {
   display: flex;
   align-items: center;
@@ -43,11 +42,10 @@
     color: #eee;
     display: flex;
     align-items: center;
-    gap: 4px; /* Space for the new icon */
+    gap: 4px;
   }
 }
 
-/* 2. Center: Search Bar */
 .searchContainer {
   flex-grow: 1;
   max-width: 600px;
@@ -77,13 +75,10 @@
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
-    /* --- THIS IS THE CHANGE --- */
-    color: #F0E491; /* Use color for icon packs */
-    /* ------------------------ */
+    color: #F0E491;
   }
 }
 
-/* 3. Right Side: Links + Profile + Cart */
 .navLinks {
   display: flex;
   align-items: center;
@@ -117,7 +112,6 @@
   }
 }
 
-/* 4. Profile Dropdown */
 .profileContainer {
   position: relative;
   display: inline-block;
@@ -178,7 +172,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 5. NEW CATEGORY BAR STYLES */
 .categoryBar {
   background: #fff;
   border-bottom: 1px solid #eee;
@@ -187,10 +180,15 @@
   justify-content: center;
   gap: 30px;
   flex-wrap: nowrap;
-  overflow-x: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  overflow-x: auto; /* Allow scrolling */
+  
+  /* --- vvv THIS IS THE FIX vvv --- */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  &::-webkit-scrollbar { 
+    display: none; /* Chrome, Safari, Opera */
+  }
+  /* --- ^^^ END FIX ^^^ --- */
 }
 
 .categoryItem {
@@ -208,7 +206,7 @@
   text-align: center;
   
   &:hover {
-    color: #22c55e; /* Bright Green */
+    color: #22c55e;
   }
 
   .iconWrapper {
@@ -221,11 +219,7 @@
     justify-content: center;
     border: 1px solid #eee;
     transition: all 0.2s;
-
-    /* --- THIS IS THE CHANGE --- */
-    /* Style the icon component via color */
     color: #31694E;
-    /* ------------------------ */
   }
 
   &:hover .iconWrapper {

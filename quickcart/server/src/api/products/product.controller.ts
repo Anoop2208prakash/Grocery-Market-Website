@@ -15,13 +15,10 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 
   const whereClause: any = {};
   if (search && typeof search === 'string') {
-    
-    // --- THIS IS THE FIX ---
-    // Removed 'mode: "insensitive"' to prevent the Prisma/MySQL crash
     whereClause.name = {
       contains: search,
+      mode: 'insensitive',
     };
-    // --- END FIX ---
   }
 
   const products = await prisma.product.findMany({
@@ -209,4 +206,56 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
   });
 
   res.json({ message: 'Product removed' });
+});
+
+
+// --- vvv ADD THESE TWO NEW FUNCTIONS vvv ---
+
+/**
+ * @desc    Get product count by category for chart
+ * @route   GET /api/products/stats/category
+ * @access  Private/Admin
+ */
+export const getProductStats = asyncHandler(async (req: Request, res: Response) => {
+  const stats = await prisma.category.findMany({
+    include: {
+      _count: {
+        select: { products: true },
+      },
+    },
+  });
+
+  const formattedStats = stats.map(cat => ({
+    name: cat.name,
+    count: cat._count.products,
+  }));
+
+  res.json(formattedStats);
+});
+
+
+/**
+ * @desc    Get all products with low stock (<= 20)
+ * @route   GET /api/products/stats/lowstock
+ * @access  Private/Admin
+ */
+export const getLowStockProducts = asyncHandler(async (req: Request, res: Response) => {
+  // This finds all stock items with quantity 20 or less
+  const lowStockItems = await prisma.stockItem.findMany({
+    where: {
+      quantity: {
+        lte: 20,
+      },
+    },
+    include: {
+      product: {
+        select: { name: true, sku: true },
+      },
+    },
+    orderBy: {
+      quantity: 'asc', // Show lowest first
+    },
+  });
+
+  res.json(lowStockItems);
 });

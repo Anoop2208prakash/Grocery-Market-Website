@@ -20,12 +20,7 @@
   border: 1px solid #eee;
   box-shadow: 0 4px 6px rgba(0,0,0,0.02);
   border-left: 5px solid #BBC863; /* Olive Accent */
-  transition: transform 0.2s;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0,0,0,0.05);
-  }
+  transition: all 0.2s ease;
 
   h3 {
     margin: 0 0 10px 0;
@@ -40,14 +35,33 @@
     font-weight: 700;
     color: #31694E;
   }
+
+  &.clickable {
+    cursor: pointer;
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+      background-color: #e8f5e9; /* Light Green hover */
+    }
+  }
 }
 
-/* --- vvv STYLES FOR CHART vvv --- */
+/* --- vvv STYLES FOR CHARTS AND LISTS vvv --- */
+/* (These were missing) */
+
+.chartSection {
+  margin-top: 40px;
+  h3 {
+    color: #31694E;
+    margin-bottom: 20px;
+  }
+}
 
 .toggleButtons {
   display: flex;
   gap: 10px;
   margin: 30px 0 20px 0;
+  flex-wrap: wrap;
 }
 
 .toggleButton {
@@ -65,9 +79,8 @@
     background-color: #eee;
   }
 
-  /* Style for the active button */
   &.active {
-    background-color: #31694E; /* Dark Green */
+    background-color: #31694E;
     color: white;
     border-color: #31694E;
   }
@@ -81,5 +94,51 @@
   padding: 20px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   border: 1px solid #eee;
+  box-sizing: border-box; 
+  overflow-x: hidden;
 }
-/* --- ^^^ END CHART STYLES ^^^ --- */
+
+.lowStockList {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.lowStockItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  strong {
+    color: #333;
+  }
+  span {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  .lowStockQuantity {
+    color: #b91c1c;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+}
+
+.emptyMessage {
+  color: #888;
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px dashed #ddd;
+}
+/* --- ^^^ END NEW STYLES ^^^ --- */

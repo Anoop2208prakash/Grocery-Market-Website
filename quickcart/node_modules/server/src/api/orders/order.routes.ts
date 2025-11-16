@@ -5,7 +5,8 @@ import {
   getOrderById,
   updateOrderStatus,
   getMyOrders,
-  getOrderStats, // <-- 1. Import this
+  getOrderStats,
+  getOrderCountStats, // <-- 1. Import this
 } from './order.controller';
 import { protect, admin } from '../auth/auth.middleware';
 
@@ -18,8 +19,9 @@ router
   .post(protect, createOrder)
   .get(protect, admin, getOrders);
 
-// --- 2. Add route for dashboard stats ---
+// --- Routes for dashboard stats ---
 router.route('/stats').get(protect, admin, getOrderStats);
+router.route('/stats/count').get(protect, admin, getOrderCountStats); // <-- 2. Add this route
 
 // GET /api/orders/myorders - Get logged-in user's orders
 // This MUST be before the '/:id' route
