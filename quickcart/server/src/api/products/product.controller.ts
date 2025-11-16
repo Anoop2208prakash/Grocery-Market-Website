@@ -15,14 +15,11 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 
   const whereClause: any = {};
   if (search && typeof search === 'string') {
-    // --- THIS IS THE FIX ---
-    // We are using 'contains' which works on all databases.
-    // This fixes the "Cannot find a fulltext index" error.
+    // This is the correct, case-insensitive search
     whereClause.name = {
       contains: search,
-      // We cannot use 'mode: insensitive' as MySQL doesn't support it here.
+      mode: 'insensitive',
     };
-    // --- END FIX ---
   }
 
   const products = await prisma.product.findMany({
@@ -54,7 +51,6 @@ export const getProductById = asyncHandler(async (req: Request, res: Response) =
     where: { id },
     include: {
       category: true,
-      // Only get stock for our specific dark store
       stockItems: {
         where: { darkStoreId: DARK_STORE_ID } 
       },
@@ -76,7 +72,7 @@ export const getProductById = asyncHandler(async (req: Request, res: Response) =
  * @access  Private/Admin
  */
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
-  const { name, sku, price, description, categoryId, stock } = req.body;
+  const { name, sku, price, description, categoryId, stock, imageUrl } = req.body;
 
   if (!name || !sku || !price || !categoryId) {
     res.status(400);
@@ -89,7 +85,6 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
     throw new Error('Product with this SKU already exists');
   }
 
-  // Use transaction to create Product AND StockItem
   const product = await prisma.$transaction(async (tx) => {
     const newProduct = await tx.product.create({
       data: {
@@ -98,10 +93,10 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
         price: parseFloat(price),
         description,
         categoryId,
+        imageUrl: imageUrl || null,
       },
     });
 
-    // Create initial stock entry
     await tx.stockItem.create({
       data: {
         productId: newProduct.id,
@@ -123,7 +118,7 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
  */
 export const updateProduct = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, sku, price, description, categoryId, stock } = req.body;
+  const { name, sku, price, description, categoryId, stock, imageUrl } = req.body;
 
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) {
@@ -139,9 +134,7 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
     }
   }
 
-  // Use transaction to update Product AND StockItem
   const updatedProduct = await prisma.$transaction(async (tx) => {
-    // 1. Update Product details
     const p = await tx.product.update({
       where: { id },
       data: {
@@ -150,10 +143,10 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
         price: price ? parseFloat(price) : product.price,
         description: description || product.description,
         categoryId: categoryId || product.categoryId,
+        imageUrl: imageUrl !== undefined ? (imageUrl || null) : product.imageUrl,
       },
     });
 
-    // 2. Update (or Create) Stock Item if stock value is sent
     if (stock !== undefined) {
       await tx.stockItem.upsert({
         where: {
@@ -192,7 +185,6 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
     throw new Error('Product not found');
   }
 
-  // Check if the product is part of any completed ORDERS.
   const orderItemCount = await prisma.orderItem.count({
     where: { productId: id }
   });
@@ -202,19 +194,13 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
     throw new Error('Cannot delete product. It is part of existing orders.');
   }
 
-  // Use a transaction to delete dependencies first
   await prisma.$transaction(async (tx) => {
-    // 1. Delete Inventory (StockItems)
     await tx.stockItem.deleteMany({
       where: { productId: id },
     });
-
-    // 2. Delete from User Carts
     await tx.cartItem.deleteMany({
       where: { productId: id },
     });
-
-    // 3. Delete the Product itself
     await tx.product.delete({ 
       where: { id } 
     });

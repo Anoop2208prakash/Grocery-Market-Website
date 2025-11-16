@@ -1,5 +1,8 @@
 import styles from './ProductCard.module.scss';
-import { useCart } from '../../contexts/CartContext'; // <-- 1. IMPORT USECART
+import { useCart } from '../../contexts/CartContext';
+import { useToast } from '../../contexts/ToastContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCartPlus } from '@fortawesome/free-solid-svg-icons';
 
 interface Product {
   id: string;
@@ -10,37 +13,55 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
-  // onAddToCart prop is no longer needed
 }
 
-// A placeholder image
-const placeholderImg = 'https://via.placeholder.com/150';
-
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { addToCart } = useCart(); // <-- 2. GET ADDTOCART FROM CONTEXT
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
 
   const handleAddToCart = () => {
-    // 3. CALL ADDTOCART WITH THE PRODUCT
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       imageUrl: product.imageUrl,
     });
-    alert(`${product.name} added to cart!`);
+    showToast(`${product.name} added to cart!`, 'success');
   };
+
+  // --- This logic fixes broken images ---
+  const getImageUrl = (url?: string | null) => {
+    const placeholderImg = 'https://via.placeholder.com/300x300.png?text=No+Image';
+
+    // If url is null, undefined, or an empty string
+    if (!url) {
+      return placeholderImg;
+    }
+    
+    // If url is external (from seed file), use it directly
+    if (url.startsWith('http') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Otherwise, it's a local upload, so add the server path
+    return `http://localhost:5000${url}`;
+  };
+
+  const imageSrc = getImageUrl(product.imageUrl);
+  // --- End of image fix ---
 
   return (
     <div className={styles.card}>
       <div className={styles.imageWrapper}>
-        <img src={product.imageUrl || placeholderImg} alt={product.name} />
+        <img src={imageSrc} alt={product.name} />
       </div>
       <h3 className={styles.name}>{product.name}</h3>
       <p className={styles.price}>₹{product.price.toFixed(2)}</p>
       <button
         className={styles.addButton}
-        onClick={handleAddToCart} // <-- 4. USE THE HANDLER
+        onClick={handleAddToCart}
       >
+        <FontAwesomeIcon icon={faCartPlus} style={{ marginRight: '8px' }} />
         Add to Cart
       </button>
     </div>

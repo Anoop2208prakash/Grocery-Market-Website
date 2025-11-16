@@ -23,7 +23,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 // --- END IMPORTS ---
 
-// --- 2. Data for the Category Bar (Updated Links) ---
+// --- 2. Data for the Category Bar (FIXED LINKS) ---
 const categoryNavData = [
   // These links now match your seed.ts and router.tsx
   { name: 'Vegetables', icon: <FontAwesomeIcon icon={faCarrot} size="xl" />, link: '/category/Vegetables' },
@@ -35,6 +35,7 @@ const categoryNavData = [
   { name: 'Snacks', icon: <FontAwesomeIcon icon={faCookieBite} size="xl" />, link: '/category/Snacks' },
   { name: 'Pantry', icon: <FontAwesomeIcon icon={faWarehouse} size="xl" />, link: '/category/Pantry' },
 ];
+// --- END FIX ---
 
 const MainLayout = () => {
   const { itemCount } = useCart();

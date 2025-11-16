@@ -1,15 +1,37 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react';
 import apiClient from '../../services/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './ProductCreate.module.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCarrot, faAppleWhole, faEgg, faBreadSlice,
+  faFish, faGlassWater, faCookieBite, faWarehouse,
+  faCamera
+} from '@fortawesome/free-solid-svg-icons';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'; // <-- 1. IMPORT THIS TYPE
 
 // Type for the categories
 interface Category {
   id: string;
   name: string;
 }
+
+// --- 2. THIS IS THE FIX ---
+// Changed 'any' to 'IconDefinition'
+const categoryIconMap: Record<string, IconDefinition> = {
+  'Vegetables': faCarrot,
+  'Fruits': faAppleWhole,
+  'Dairy & Eggs': faEgg,
+  'Bakery': faBreadSlice,
+  'Meat & Fish': faFish,
+  'Beverages': faGlassWater,
+  'Snacks': faCookieBite,
+  'Pantry': faWarehouse,
+  'Default': faCarrot // Fallback
+};
+// --- END FIX ---
 
 const ProductCreate = () => {
   const [name, setName] = useState('');
@@ -18,12 +40,13 @@ const ProductCreate = () => {
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
-  
   const [stock, setStock] = useState('0'); 
-
+  
+  const [imageUrl, setImageUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -31,9 +54,9 @@ const ProductCreate = () => {
     const fetchCategories = async () => {
       try {
         const { data } = await apiClient.get('/categories');
-        setCategories(data); // This will fetch all 8 categories
+        setCategories(data);
         if (data.length > 0) {
-          setCategoryId(data[0].id); // Default to the first one
+          setCategoryId(data[0].id);
         }
       } catch (err) {
         console.error(err);
@@ -43,14 +66,39 @@ const ProductCreate = () => {
     fetchCategories();
   }, []);
 
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    setUploading(true);
+    try {
+      const { data } = await apiClient.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setImageUrl(data.imageUrl);
+      setUploading(false);
+      showToast('Image uploaded!', 'success');
+      
+    } catch (err) {
+      console.error(err);
+      showToast('Image upload failed', 'error');
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await apiClient.post('/products', {
-        name, sku, price, description, categoryId, stock,
+        name, sku, price, description, categoryId, stock, imageUrl,
       });
       setLoading(false);
       showToast('Product created successfully!', 'success');
@@ -86,6 +134,33 @@ const ProductCreate = () => {
           <label>SKU</label>
           <input type="text" value={sku} onChange={(e) => setSku(e.target.value)} required />
         </div>
+
+        <div className={styles.formGroup}>
+          <label>Product Image</label>
+          <div className={styles.imageUploader}>
+            <input 
+              id="file-upload"
+              type="file" 
+              onChange={handleFileUpload} 
+              className={styles.fileInput}
+              accept="image/png, image/jpeg, image/gif"
+            />
+            {imageUrl ? (
+              <div className={styles.imagePreview}>
+                <img src={`http://localhost:5000${imageUrl}`} alt="Preview" />
+                <label htmlFor="file-upload" className={styles.changeButton}>
+                  Change
+                </label>
+              </div>
+            ) : (
+              <label htmlFor="file-upload" className={styles.uploadBox}>
+                <FontAwesomeIcon icon={faCamera} className={styles.icon} />
+                <p>Upload Photo</p>
+              </label>
+            )}
+            {uploading && <p>Uploading...</p>}
+          </div>
+        </div>
         
         <div className={styles.formGroup}>
           <label>Price (in Rupees)</label>
@@ -102,29 +177,33 @@ const ProductCreate = () => {
           />
         </div>
 
-        {/* --- This is the Dropdown --- */}
         <div className={styles.formGroup}>
           <label>Category</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-            {categories.length === 0 ? (
-              <option>Loading categories...</option>
-            ) : (
-              // All 8 categories will be mapped here
-              categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))
-            )}
-          </select>
+          <div className={styles.categoryGrid}>
+            {categories.map(cat => {
+              const icon = categoryIconMap[cat.name] || categoryIconMap['Default'];
+              return (
+                <button
+                  type="button"
+                  key={cat.id}
+                  className={`${styles.categoryItem} ${cat.id === categoryId ? styles.active : ''}`}
+                  onClick={() => setCategoryId(cat.id)}
+                >
+                  <FontAwesomeIcon icon={icon} className={styles.icon} />
+                  {cat.name}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        {/* --- End Dropdown --- */}
         
         <div className={styles.formGroup}>
           <label>Description</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
         </div>
 
-        <button type="submit" disabled={loading} className={styles.submitButton}>
-          {loading ? 'Creating...' : 'Create Product'}
+        <button type="submit" disabled={loading || uploading} className={styles.submitButton}>
+          {loading ? 'Saving...' : 'Create Product'}
         </button>
       </form>
     </div>

@@ -1,20 +1,27 @@
-// server/src/app.ts
 import express from 'express';
 import cors from 'cors';
+import path from 'path'; // Make sure 'path' is imported
 import authRoutes from './api/auth/auth.routes';
 import productRoutes from './api/products/product.routes';
 import categoryRoutes from './api/categories/category.routes';
 import orderRoutes from './api/orders/order.routes';
 import deliveryRoutes from './api/delivery/delivery.routes';
 import userRoutes from './api/users/user.routes';
-import locationRoutes from './api/location/location.routes'; // <-- 1. IMPORT THIS
+import locationRoutes from './api/location/location.routes';
+import uploadRoutes from './api/upload/upload.routes';
 
 const app = express();
 
-// --- Global Middleware ---
-app.use(cors()); // Allow cross-origin requests (from our React app)
-app.use(express.json()); // Allow app to accept JSON body
+app.use(cors());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// --- THIS IS THE FIX ---
+// We use process.cwd() which is 'quickcart/server'
+// and join it with 'public/uploads'
+const uploadsPath = path.join(process.cwd(), './public/uploads');
+app.use('/uploads', express.static(uploadsPath));
+// --- END FIX ---
 
 // --- API Routes ---
 app.get('/api', (req, res) => {
@@ -27,8 +34,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/location', locationRoutes); // <-- 2. ADD THIS LINE
-
-// --- (We will add an error handler middleware later) ---
+app.use('/api/location', locationRoutes);
+app.use('/api/upload', uploadRoutes);
 
 export default app;

@@ -2,16 +2,15 @@ import { useCart } from '../../contexts/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import EmptyState from '../../components/common/EmptyState';
 import styles from './CartPage.module.scss';
-import { useAuth } from '../../contexts/AuthContext'; // <-- 1. Import Auth
-import apiClient from '../../services/apiClient';  // <-- 2. Import API client
-import { AxiosError } from 'axios';               // <-- 3. Import AxiosError
-import { useState } from 'react';                  // <-- 4. Import useState
+import { useAuth } from '../../contexts/AuthContext';
+import apiClient from '../../services/apiClient';
+import { AxiosError } from 'axios';
+import { useState } from 'react';
 
 const CartPage = () => {
-  // 5. Re-add clearCart and add other hooks
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart();
-  const { user } = useAuth(); // Get user
-  const navigate = useNavigate(); // Re-add navigate
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,10 +19,8 @@ const CartPage = () => {
     0
   );
 
-  // 6. Update the checkout handler
   const handleCheckout = async () => {
     if (!user) {
-      // If not logged in, redirect to login
       navigate('/auth/login?redirect=/cart');
       return;
     }
@@ -37,10 +34,8 @@ const CartPage = () => {
         totalPrice: total,
       });
       
-      // Success!
       setLoading(false);
-      clearCart(); // Empty the cart
-      // We'll create this success page next
+      clearCart();
       navigate(`/order-success/${newOrder.id}`);
 
     } catch (err) {
@@ -54,6 +49,25 @@ const CartPage = () => {
     }
   };
 
+  // --- vvv THIS IS THE FIX vvv ---
+  const getImageUrl = (url?: string | null) => {
+    const placeholderImg = 'https://via.placeholder.com/300x300.png?text=No+Image';
+
+    // If url is null, undefined, or an empty string
+    if (!url) {
+      return placeholderImg;
+    }
+    
+    // If url is external (from seed file), use it directly
+    if (url.startsWith('http') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Otherwise, it's a local upload, so add the server path
+    return `http://localhost:5000${url}`;
+  };
+  // --- ^^^ END FIX ^^^ ---
+
   if (cartItems.length === 0) {
     return (
       <EmptyState 
@@ -62,7 +76,7 @@ const CartPage = () => {
       >
         <Link 
           to="/" 
-          style={{textDecoration: 'none', background: 'blue', color: 'white', padding: '10px 15px', borderRadius: 4}}
+          style={{textDecoration: 'none', background: '#31694E', color: 'white', padding: '10px 15px', borderRadius: 4}}
         >
           Start Shopping
         </Link>
@@ -77,7 +91,7 @@ const CartPage = () => {
         {cartItems.map(item => (
           <div key={item.id} className={styles.item}>
             <img 
-              src={item.imageUrl || 'https://via.placeholder.com/150'} 
+              src={getImageUrl(item.imageUrl)} // <-- APPLY THE FIX HERE
               alt={item.name} 
               className={styles.itemImage}
             />
@@ -105,13 +119,12 @@ const CartPage = () => {
           Subtotal: ₹{total.toFixed(2)}
         </h2>
 
-        {/* Show error if there is one */}
         {error && <p style={{ color: 'red', marginBottom: 15 }}>{error}</p>}
 
         <button 
           className={styles.checkoutButton}
           onClick={handleCheckout}
-          disabled={loading} // 7. Disable button while loading
+          disabled={loading}
         >
           {loading ? 'Placing Order...' : 'Proceed to Checkout'}
         </button>

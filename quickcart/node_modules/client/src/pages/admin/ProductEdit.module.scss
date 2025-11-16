@@ -10,7 +10,6 @@
   border: 1px solid #eee;
 }
 
-/* vvv UPDATED HEADER STYLES vvv */
 .header {
   display: flex;
   justify-content: space-between; /* Title Left, Link Right */
@@ -36,14 +35,12 @@
   font-weight: 600;
   font-size: 0.95rem;
   transition: color 0.2s ease;
-  /* Removed margin-bottom */
 
   &:hover {
     color: #31694E; /* Dark Green */
     text-decoration: underline;
   }
 }
-/* ^^^ END UPDATED HEADER STYLES ^^^ */
 
 .form {
   display: flex;
@@ -118,3 +115,130 @@
     cursor: not-allowed;
   }
 }
+
+/* --- vvv STYLES FOR ICON CATEGORY PICKER vvv --- */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 15px;
+  margin-top: 5px;
+}
+
+.categoryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 10px;
+  border-radius: 8px;
+  border: 2px solid #eee;
+  background: #fdfdfd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+  text-align: center;
+  
+  .icon {
+    font-size: 1.6rem; /* Icon size */
+    color: #31694E;
+    transition: all 0.2s;
+  }
+
+  &:hover {
+    border-color: #BBC863;
+    background: #FDFDF5;
+    transform: translateY(-3px);
+  }
+
+  &.active {
+    border-color: #31694E;
+    background: #e8f5e9;
+    color: #31694E;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transform: scale(1.03);
+
+    .icon {
+      transform: scale(1.1);
+    }
+  }
+}
+/* --- ^^^ END CATEGORY STYLES ^^^ --- */
+
+
+/* --- vvv STYLES FOR FILE UPLOADER vvv --- */
+.imageUploader {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  background-color: #fdfdfd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  .icon {
+    font-size: 2.5rem;
+    color: #888;
+  }
+
+  p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #666;
+    margin-top: 10px;
+  }
+
+  &:hover {
+    border-color: #658C58;
+    background-color: #FDFDF5;
+  }
+}
+
+.imagePreview {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This makes the image cover the box */
+    border-radius: 12px;
+    border: 1px solid #eee;
+  }
+
+  .changeButton {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
+    &:hover {
+      background: white;
+    }
+  }
+}
+/* --- ^^^ END FILE UPLOADER STYLES ^^^ --- */
