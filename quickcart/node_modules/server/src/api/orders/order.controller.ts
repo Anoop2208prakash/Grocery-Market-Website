@@ -70,7 +70,6 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
           },
         });
 
-        // If stock doesn't exist or is too low, abort transaction
         if (!stockItem || stockItem.quantity < item.quantity) {
           throw new Error(`Not enough stock for product ID: ${item.id}`);
         }
@@ -88,7 +87,6 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
       // 3. CREATE OrderItems and DEDUCT Stock
       for (const item of cartItems) {
-        // Create OrderItem
         await tx.orderItem.create({
           data: {
             orderId: order.id,
@@ -97,8 +95,6 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
             price: item.price,
           },
         });
-
-        // Deduct Stock
         await tx.stockItem.update({
           where: {
             productId_darkStoreId: {
@@ -121,7 +117,6 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
   } catch (error: any) {
     console.error('Failed to create order:', error.message);
-    // Return 400 because it's likely a stock issue or bad request
     res.status(400); 
     throw new Error(error.message || 'Failed to create order');
   }
@@ -218,4 +213,60 @@ export const getMyOrders = asyncHandler(async (req: AuthRequest, res: Response) 
   });
 
   res.json(orders);
+});
+
+/**
+ * @desc    Get order statistics for charts
+ * @route   GET /api/orders/stats
+ * @access  Private/Admin
+ */
+export const getOrderStats = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { period } = req.query;
+  let query;
+  
+  const baseQuery = "SELECT SUM(`totalPrice`) as total, DATE_FORMAT(`createdAt`, '%Y-%m-%d') as date FROM `order` WHERE `status` = 'DELIVERED'";
+
+  switch (period) {
+    case 'daily':
+      query = `
+        ${baseQuery} AND \`createdAt\` >= CURDATE() - INTERVAL 7 DAY
+        GROUP BY DATE(\`createdAt\`)
+        ORDER BY DATE(\`createdAt\`) ASC;
+      `;
+      break;
+    case 'weekly':
+      query = `
+        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(DATE_SUB(\`createdAt\`, INTERVAL WEEKDAY(\`createdAt\`) DAY), '%Y-%m-%d') as date
+        FROM \`order\` WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 12 WEEK
+        GROUP BY YEARWEEK(\`createdAt\`)
+        ORDER BY YEARWEEK(\`createdAt\`) ASC;
+      `;
+      break;
+    case 'yearly':
+      query = `
+        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-01-01') as date
+        FROM \`order\` WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 5 YEAR
+        GROUP BY YEAR(\`createdAt\`)
+        ORDER BY YEAR(\`createdAt\`) ASC;
+      `;
+      break;
+    case 'monthly':
+    default:
+      query = `
+        ${baseQuery} AND \`createdAt\` >= CURDATE() - INTERVAL 12 MONTH
+        GROUP BY DATE_FORMAT(\`createdAt\`, '%Y-%m-01')
+        ORDER BY DATE_FORMAT(\`createdAt\`, '%Y-%m-01') ASC;
+      `;
+      break;
+  }
+
+  const results = await prisma.$queryRawUnsafe(query);
+  
+  const stringifiedResults = (results as any[]).map(item => ({
+    ...item,
+    total: item.total ? item.total.toString() : '0',
+    date: item.date ? item.date.toString() : 'N/A'
+  }));
+
+  res.json(stringifiedResults);
 });
