@@ -15,11 +15,13 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 
   const whereClause: any = {};
   if (search && typeof search === 'string') {
-    // This is the correct, case-insensitive search
+    
+    // --- THIS IS THE FIX ---
+    // Removed 'mode: "insensitive"' to prevent the Prisma/MySQL crash
     whereClause.name = {
       contains: search,
-      mode: 'insensitive',
     };
+    // --- END FIX ---
   }
 
   const products = await prisma.product.findMany({

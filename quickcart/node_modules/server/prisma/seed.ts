@@ -72,55 +72,55 @@ async function main() {
   console.log('Created all 8 categories...');
 
   // --- 3. Create Products (with new images) ---
-  await prisma.product.upsert({
-    where: { sku: 'PROD-001' },
-    update: {
-      imageUrl: 'https://zamaorganics.com/cdn/shop/files/banana1000_x_1000_px_1.png?v=1752738968',
-      price: 50.00,
-      categoryId: catVeg.id, // Linked to Vegetables
-    },
-    create: {
-      sku: 'PROD-001',
-      name: 'Organic Bananas',
-      description: 'Fresh bananas',
-      price: 50.00,
-      categoryId: catVeg.id,
-      imageUrl: 'https://zamaorganics.com/cdn/shop/files/banana1000_x_1000_px_1.png?v=1752738968',
-    },
-  });
-  await prisma.product.upsert({
-    where: { sku: 'PROD-002' },
-    update: {
-      imageUrl: 'https://deliaura.com/wp-content/uploads/2024/02/Farm-Fresh-Classic-Eggs-Pack-of-12.jpg',
-      price: 40.00,
-      categoryId: catDairy.id, // Linked to Dairy & Eggs
-    },
-    create: {
-      sku: 'PROD-002',
-      name: 'Farm Fresh Eggs (12 pack)',
-      description: 'Large brown eggs',
-      price: 40.00,
-      categoryId: catDairy.id,
-      imageUrl: 'https://deliaura.com/wp-content/uploads/2024/02/Farm-Fresh-Classic-Eggs-Pack-of-12.jpg',
-    },
-  });
-  await prisma.product.upsert({
-    where: { sku: 'PROD-003' },
-    update: {
-      imageUrl: 'https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480_1_5x/img/recipe/ras/Assets/57618e37-2445-4835-b872-5af36ac5dcb0/Derivates/588f2b19-6a23-4643-a59e-8335def06f79.jpg',
-      price: 60.00,
-      categoryId: catBakery.id, // Linked to Bakery
-    },
-    create: {
-      sku: 'PROD-003',
-      name: 'Sourdough Loaf',
-      description: 'Artisan bread',
-      price: 60.00,
-      categoryId: catBakery.id,
-      imageUrl: 'https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480_1_5x/img/recipe/ras/Assets/57618e37-2445-4835-b872-5af36ac5dcb0/Derivates/588f2b19-6a23-4643-a59e-8335def06f79.jpg',
-    },
-  });
-  console.log('Created/updated products with real images...');
+  // await prisma.product.upsert({
+  //   where: { sku: 'PROD-001' },
+  //   update: {
+  //     imageUrl: 'https://zamaorganics.com/cdn/shop/files/banana1000_x_1000_px_1.png?v=1752738968',
+  //     price: 50.00,
+  //     categoryId: catVeg.id, // Linked to Vegetables
+  //   },
+  //   create: {
+  //     sku: 'PROD-001',
+  //     name: 'Organic Bananas',
+  //     description: 'Fresh bananas',
+  //     price: 50.00,
+  //     categoryId: catVeg.id,
+  //     imageUrl: 'https://zamaorganics.com/cdn/shop/files/banana1000_x_1000_px_1.png?v=1752738968',
+  //   },
+  // });
+  // await prisma.product.upsert({
+  //   where: { sku: 'PROD-002' },
+  //   update: {
+  //     imageUrl: 'https://deliaura.com/wp-content/uploads/2024/02/Farm-Fresh-Classic-Eggs-Pack-of-12.jpg',
+  //     price: 40.00,
+  //     categoryId: catDairy.id, // Linked to Dairy & Eggs
+  //   },
+  //   create: {
+  //     sku: 'PROD-002',
+  //     name: 'Farm Fresh Eggs (12 pack)',
+  //     description: 'Large brown eggs',
+  //     price: 40.00,
+  //     categoryId: catDairy.id,
+  //     imageUrl: 'https://deliaura.com/wp-content/uploads/2024/02/Farm-Fresh-Classic-Eggs-Pack-of-12.jpg',
+  //   },
+  // });
+  // await prisma.product.upsert({
+  //   where: { sku: 'PROD-003' },
+  //   update: {
+  //     imageUrl: 'https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480_1_5x/img/recipe/ras/Assets/57618e37-2445-4835-b872-5af36ac5dcb0/Derivates/588f2b19-6a23-4643-a59e-8335def06f79.jpg',
+  //     price: 60.00,
+  //     categoryId: catBakery.id, // Linked to Bakery
+  //   },
+  //   create: {
+  //     sku: 'PROD-003',
+  //     name: 'Sourdough Loaf',
+  //     description: 'Artisan bread',
+  //     price: 60.00,
+  //     categoryId: catBakery.id,
+  //     imageUrl: 'https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480_1_5x/img/recipe/ras/Assets/57618e37-2445-4835-b872-5af36ac5dcb0/Derivates/588f2b19-6a23-4643-a59e-8335def06f79.jpg',
+  //   },
+  // });
+  // console.log('Created/updated products with real images...');
 
   // --- 4. CREATE THE DARK STORE ---
   const darkStore = await prisma.darkStore.upsert({
