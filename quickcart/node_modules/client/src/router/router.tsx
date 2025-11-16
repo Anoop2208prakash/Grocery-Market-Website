@@ -16,7 +16,8 @@ import OrderSuccess from '../pages/customer/OrderSuccess';
 import MyOrders from '../pages/customer/MyOrders';
 import ProfilePage from '../pages/customer/ProfilePage';
 import UpdatePassword from '../pages/customer/UpdatePassword';
-import SearchPage from '../pages/customer/SearchPage'; // <-- 1. IMPORT THIS
+import SearchPage from '../pages/customer/SearchPage';
+import CategoryPage from '../pages/customer/CategoryPage';
 
 // Auth Pages
 import Login from '../pages/auth/Login';
@@ -44,7 +45,9 @@ const router = createBrowserRouter([
       { path: 'my-orders', element: <MyOrders /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/update-password', element: <UpdatePassword /> },
-      { path: 'search', element: <SearchPage /> }, // <-- 2. ADD THIS ROUTE
+      { path: 'search', element: <SearchPage /> },
+      // --- vvv THIS IS THE CHANGE vvv ---
+      { path: 'category/:name', element: <CategoryPage /> }, 
     ],
   },
   {
@@ -55,14 +58,14 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <ProtectedRoute />,
+    element: <ProtectedRoute />, // <-- Guards all children (Driver + Admin)
     children: [
       { 
         path: '/driver', 
         element: <DriverDashboard /> 
       },
       {
-        element: <AdminRoute />,
+        element: <AdminRoute />, // <-- Guards only Admin routes
         children: [
           {
             path: '/admin',

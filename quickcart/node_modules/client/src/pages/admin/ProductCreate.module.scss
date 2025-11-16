@@ -10,12 +10,10 @@
   border: 1px solid #eee;
 }
 
-/* --- UPDATED HEADER SECTION --- */
 .header {
-  display: flex;               /* Align items horizontally */
-  justify-content: space-between; /* Space them out (Title left, Link right) */
-  align-items: center;         /* Vertically center them */
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   border-bottom: 3px solid #F0E491; /* Cream Accent */
   padding-bottom: 15px;
   margin-bottom: 30px;
@@ -36,14 +34,12 @@
   font-weight: 600;
   font-size: 0.95rem;
   transition: color 0.2s ease;
-  /* Removed margin-bottom since it's now side-by-side */
 
   &:hover {
     color: #31694E; /* Dark Green */
     text-decoration: underline;
   }
 }
-/* --------------------------- */
 
 .form {
   display: flex;
@@ -62,6 +58,7 @@
     font-size: 0.95rem;
   }
 
+  /* This applies to input, select, and textarea */
   input, select, textarea {
     padding: 12px 15px;
     border: 1px solid #ddd;
@@ -118,3 +115,56 @@
     cursor: not-allowed;
   }
 }
+
+/* --- STYLES FOR ICON CATEGORY PICKER --- */
+.categoryGrid {
+  display: grid;
+  /* Creates 4 columns, or fewer if space is tight */
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 15px;
+  margin-top: 5px;
+}
+
+.categoryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 10px;
+  border-radius: 8px;
+  border: 2px solid #eee;
+  background: #fdfdfd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+  text-align: center;
+  
+  .icon {
+    font-size: 1.6rem; /* Icon size */
+    color: #31694E; /* Dark Green */
+    transition: all 0.2s;
+  }
+
+  &:hover {
+    border-color: #BBC863; /* Olive */
+    background: #FDFDF5; /* Light cream */
+    transform: translateY(-3px);
+  }
+
+  /* This style is applied when the category is selected */
+  &.active {
+    border-color: #31694E; /* Dark Green */
+    background: #e8f5e9; /* Light green */
+    color: #31694E;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transform: scale(1.03);
+
+    .icon {
+      transform: scale(1.1);
+    }
+  }
+}
+/* --- END NEW STYLES --- */

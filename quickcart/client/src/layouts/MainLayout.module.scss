@@ -1,6 +1,5 @@
 /* client/src/layouts/MainLayout.module.scss */
 
-/* The main navbar container */
 .navbar {
   display: flex;
   align-items: center;
@@ -30,17 +29,21 @@
 .deliveryInfo {
   border-left: 1px solid rgba(255, 255, 255, 0.2);
   padding-left: 20px;
+  cursor: pointer;
   
   h4 {
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
-    color: #ffffff; /* White text */
+    color: #ffffff;
   }
   
   span {
     font-size: 0.9rem;
-    color: #eee; /* Light text */
+    color: #eee;
+    display: flex;
+    align-items: center;
+    gap: 4px; /* Space for the new icon */
   }
 }
 
@@ -54,15 +57,12 @@
     width: 100%;
     padding: 12px 20px 12px 45px;
     font-size: 1rem;
-    border: 1px solid #658C58; /* Medium Green border */
-    background-color: rgba(255, 255, 255, 0.1); /* Transparent white */
+    border: 1px solid #658C58;
+    background-color: rgba(255, 255, 255, 0.1);
     color: white;
     border-radius: 8px;
 
-    &::placeholder {
-      color: #eee;
-    }
-
+    &::placeholder { color: #eee; }
     &:focus {
       outline: none;
       border-color: #F0E491;
@@ -75,12 +75,11 @@
     left: 15px;
     top: 50%;
     transform: translateY(-50%);
-    /* Style for the SVG icon */
     width: 20px;
     height: 20px;
-    stroke: #F0E491;
-    fill: none;
-    stroke-width: 2.5;
+    /* --- THIS IS THE CHANGE --- */
+    color: #F0E491; /* Use color for icon packs */
+    /* ------------------------ */
   }
 }
 
@@ -100,10 +99,7 @@
   color: #ffffff;
   font-weight: 600;
   transition: background 0.2s;
-
-  &:hover {
-    background: #658C58;
-  }
+  &:hover { background: #658C58; }
 }
 
 .cartLink {
@@ -142,9 +138,7 @@
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease;
-  &:hover {
-    transform: scale(1.1);
-  }
+  &:hover { transform: scale(1.1); }
 }
 
 .dropdownMenu {
@@ -182,4 +176,60 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* 5. NEW CATEGORY BAR STYLES */
+.categoryBar {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.categoryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  flex-shrink: 0;
+  width: 80px;
+  text-align: center;
+  
+  &:hover {
+    color: #22c55e; /* Bright Green */
+  }
+
+  .iconWrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #f7f7f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eee;
+    transition: all 0.2s;
+
+    /* --- THIS IS THE CHANGE --- */
+    /* Style the icon component via color */
+    color: #31694E;
+    /* ------------------------ */
+  }
+
+  &:hover .iconWrapper {
+    background-color: #e8f5e9;
+    border-color: #22c55e;
+  }
 }

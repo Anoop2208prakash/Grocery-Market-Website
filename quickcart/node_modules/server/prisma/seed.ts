@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Start seeding...');
 
-  // --- 1. Create a Test Admin User ---
+  // --- 1. Create Users ---
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash('admin123', salt);
 
@@ -24,50 +24,67 @@ async function main() {
   });
   console.log(`Created admin user: ${adminUser.email}`);
 
-  // --- 1.5 Create a Test Driver User ---
   const driverUser = await prisma.user.upsert({
     where: { email: 'driver@quickcart.com' },
     update: {},
     create: {
       email: 'driver@quickcart.com',
       name: 'Speedy Driver',
-      password: hashedPassword, // Uses same 'admin123' password
+      password: hashedPassword,
       role: UserRole.DRIVER,
     },
   });
   console.log(`Created driver user: ${driverUser.email}`);
 
-  // --- 2. Create Categories ---
-  const cat1 = await prisma.category.upsert({
-    where: { name: 'Fresh Produce' },
-    update: {},
-    create: { name: 'Fresh Produce' },
+  // --- 2. Create ALL 8 Categories ---
+  const catVeg = await prisma.category.upsert({
+    where: { name: 'Vegetables' },
+    update: {}, create: { name: 'Vegetables' },
   });
-  const cat2 = await prisma.category.upsert({
+  const catFruit = await prisma.category.upsert({
+    where: { name: 'Fruits' },
+    update: {}, create: { name: 'Fruits' },
+  });
+  const catDairy = await prisma.category.upsert({
     where: { name: 'Dairy & Eggs' },
-    update: {},
-    create: { name: 'Dairy & Eggs' },
+    update: {}, create: { name: 'Dairy & Eggs' },
   });
-  const cat3 = await prisma.category.upsert({
+  const catBakery = await prisma.category.upsert({
     where: { name: 'Bakery' },
-    update: {},
-    create: { name: 'Bakery' },
+    update: {}, create: { name: 'Bakery' },
   });
-  console.log('Created categories...');
+  const catMeat = await prisma.category.upsert({
+    where: { name: 'Meat & Fish' },
+    update: {}, create: { name: 'Meat & Fish' },
+  });
+  const catBev = await prisma.category.upsert({
+    where: { name: 'Beverages' },
+    update: {}, create: { name: 'Beverages' },
+  });
+  const catSnacks = await prisma.category.upsert({
+    where: { name: 'Snacks' },
+    update: {}, create: { name: 'Snacks' },
+  });
+  const catPantry = await prisma.category.upsert({
+    where: { name: 'Pantry' },
+    update: {}, create: { name: 'Pantry' },
+  });
+  console.log('Created all 8 categories...');
 
-  // --- 3. Create Products (with real image URLs) ---
+  // --- 3. Create Products (with new images) ---
   await prisma.product.upsert({
     where: { sku: 'PROD-001' },
     update: {
       imageUrl: 'https://zamaorganics.com/cdn/shop/files/banana1000_x_1000_px_1.png?v=1752738968',
       price: 50.00,
+      categoryId: catVeg.id, // Linked to Vegetables
     },
     create: {
       sku: 'PROD-001',
       name: 'Organic Bananas',
       description: 'Fresh bananas',
       price: 50.00,
-      categoryId: cat1.id,
+      categoryId: catVeg.id,
       imageUrl: 'https://zamaorganics.com/cdn/shop/files/banana1000_x_1000_px_1.png?v=1752738968',
     },
   });
@@ -76,13 +93,14 @@ async function main() {
     update: {
       imageUrl: 'https://deliaura.com/wp-content/uploads/2024/02/Farm-Fresh-Classic-Eggs-Pack-of-12.jpg',
       price: 40.00,
+      categoryId: catDairy.id, // Linked to Dairy & Eggs
     },
     create: {
       sku: 'PROD-002',
       name: 'Farm Fresh Eggs (12 pack)',
       description: 'Large brown eggs',
       price: 40.00,
-      categoryId: cat2.id,
+      categoryId: catDairy.id,
       imageUrl: 'https://deliaura.com/wp-content/uploads/2024/02/Farm-Fresh-Classic-Eggs-Pack-of-12.jpg',
     },
   });
@@ -91,13 +109,14 @@ async function main() {
     update: {
       imageUrl: 'https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480_1_5x/img/recipe/ras/Assets/57618e37-2445-4835-b872-5af36ac5dcb0/Derivates/588f2b19-6a23-4643-a59e-8335def06f79.jpg',
       price: 60.00,
+      categoryId: catBakery.id, // Linked to Bakery
     },
     create: {
       sku: 'PROD-003',
       name: 'Sourdough Loaf',
       description: 'Artisan bread',
       price: 60.00,
-      categoryId: cat3.id,
+      categoryId: catBakery.id,
       imageUrl: 'https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480_1_5x/img/recipe/ras/Assets/57618e37-2445-4835-b872-5af36ac5dcb0/Derivates/588f2b19-6a23-4643-a59e-8335def06f79.jpg',
     },
   });
@@ -146,9 +165,6 @@ async function main() {
   console.log('Seeding finished.');
 }
 
-// --- UPDATED CODE BLOCK ---
-// This uses try/catch/finally to handle the promise
-// and correctly reference 'process'
 async function runSeed() {
   try {
     await main();
@@ -161,4 +177,3 @@ async function runSeed() {
 }
 
 runSeed();
-// --- END UPDATED CODE BLOCK ---
