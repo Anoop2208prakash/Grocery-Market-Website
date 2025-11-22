@@ -3,24 +3,33 @@ import { Link } from 'react-router-dom';
 import EmptyState from '../../components/common/EmptyState';
 import styles from './CartPage.module.scss';
 
+// --- CONSTANTS ---
+const FREE_DELIVERY_THRESHOLD = 500; 
+const DELIVERY_FEE = 40; 
+
 const CartPage = () => {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
 
-  const total = cartItems.reduce(
+  // 1. Calculate Subtotal
+  const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
 
+  // 2. Calculate Delivery Fee Logic
+  const isFreeDelivery = subtotal >= FREE_DELIVERY_THRESHOLD;
+  const deliveryCharge = isFreeDelivery ? 0 : DELIVERY_FEE;
+  const total = subtotal + deliveryCharge;
+
+  // 3. Calculate Progress %
+  const progress = Math.min((subtotal / FREE_DELIVERY_THRESHOLD) * 100, 100);
+  const amountNeeded = FREE_DELIVERY_THRESHOLD - subtotal;
+
   // --- Image Helper ---
   const getImageUrl = (url?: string | null) => {
     const placeholderImg = 'https://via.placeholder.com/300x300.png?text=No+Image';
-
     if (!url) return placeholderImg;
-    
-    if (url.startsWith('http') || url.startsWith('https')) {
-      return url;
-    }
-
+    if (url.startsWith('http') || url.startsWith('https')) return url;
     return `http://localhost:5000${url}`;
   };
 
@@ -43,6 +52,27 @@ const CartPage = () => {
   return (
     <div className={styles.cartPage}>
       <h1>Your Cart</h1>
+
+      {/* --- Free Delivery Progress Bar --- */}
+      <div className={styles.deliveryProgress}>
+        {isFreeDelivery ? (
+          <div className={styles.unlockedBadge}>
+             🎉 You've unlocked <strong>Free Delivery!</strong>
+          </div>
+        ) : (
+          <>
+            <p>Add <span>₹{amountNeeded.toFixed(0)}</span> more for <strong>Free Delivery</strong></p>
+            <div className={styles.progressBarBg}>
+              <div 
+                className={styles.progressBarFill} 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </>
+        )}
+      </div>
+      {/* --- End Progress Bar --- */}
+
       <div>
         {cartItems.map(item => (
           <div key={item.id} className={styles.item}>
@@ -71,16 +101,25 @@ const CartPage = () => {
       </div>
       
       <div className={styles.summary}>
+        {/* Breakdown */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <span>Subtotal:</span>
+          <span>₹{subtotal.toFixed(2)}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: isFreeDelivery ? 'green' : '#555' }}>
+          <span>Delivery Fee:</span>
+          <span>{isFreeDelivery ? 'FREE' : `₹${DELIVERY_FEE.toFixed(2)}`}</span>
+        </div>
+        <hr style={{ margin: '15px 0', borderTop: '1px dashed #ccc' }} />
+
         <h2 className={styles.total}>
-          Subtotal: ₹{total.toFixed(2)}
+          Total: ₹{total.toFixed(2)}
         </h2>
 
-        {/* --- THIS IS THE UPDATE --- */}
-        {/* Changed button to a Link that goes to the new Checkout Page */}
+        {/* --- THIS IS THE LINK TO CHECKOUT --- */}
         <Link to="/checkout" className={styles.checkoutButton}>
           Proceed to Checkout
         </Link>
-        {/* --- END UPDATE --- */}
       </div>
     </div>
   );

@@ -1,17 +1,15 @@
 /* client/src/layouts/MainLayout.module.scss */
 
-/* The main navbar container */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 30px;
   padding: 15px 30px;
-  background-color: #31694E; /* Dark Green */
-  border-bottom: 4px solid #BBC863; /* Olive accent */
+  background-color: #31694E;
+  border-bottom: 4px solid #BBC863;
 }
 
-/* 1. Left Side: Logo + Delivery */
 .brandSection {
   display: flex;
   align-items: center;
@@ -23,7 +21,7 @@
   font-size: 2rem;
   font-weight: 800;
   text-decoration: none;
-  color: #F0E491; /* Cream text */
+  color: #F0E491;
   letter-spacing: -1px;
 }
 
@@ -36,37 +34,43 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
-    color: #ffffff; /* White text */
+    color: #ffffff;
   }
   
   span {
     font-size: 0.9rem;
-    color: #eee; /* Light text */
+    color: #eee;
     display: flex;
     align-items: center;
     gap: 4px;
   }
 }
 
-/* 2. Center: Search Bar */
-.searchContainer {
+/* --- vvv NEW SEARCH WRAPPER vvv --- */
+/* Keeps search bar and filter button together */
+.searchWrapper {
   flex-grow: 1;
   max-width: 600px;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between input and button */
+}
+
+.searchContainer {
+  flex-grow: 1;
   position: relative;
 
   .searchInput {
     width: 100%;
     padding: 12px 20px 12px 45px;
     font-size: 1rem;
-    border: 1px solid #658C58; /* Medium Green border */
-    background-color: rgba(255, 255, 255, 0.1); /* Transparent white */
+    border: 1px solid #658C58;
+    background-color: rgba(255, 255, 255, 0.1);
     color: white;
     border-radius: 8px;
+    box-sizing: border-box; /* Fixes width issues */
 
-    &::placeholder {
-      color: #eee;
-    }
-
+    &::placeholder { color: #eee; }
     &:focus {
       outline: none;
       border-color: #F0E491;
@@ -85,7 +89,29 @@
   }
 }
 
-/* 3. Right Side: Links + Profile + Cart */
+/* The Filter Button Style */
+.filterButton {
+  height: 45px;
+  width: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid #658C58;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #F0E491;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #F0E491;
+    transform: translateY(-1px);
+  }
+}
+/* --- ^^^ END NEW STYLES ^^^ --- */
+
 .navLinks {
   display: flex;
   align-items: center;
@@ -101,16 +127,12 @@
   color: #ffffff;
   font-weight: 600;
   transition: background 0.2s;
-
-  &:hover {
-    background: #658C58;
-  }
+  &:hover { background: #658C58; }
 }
 
 .cartLink {
   @extend .navLink;
   background: rgba(255, 255, 255, 0.1);
-  
   .cartCount {
     margin-left: 8px;
     background: #F0E491;
@@ -122,7 +144,6 @@
   }
 }
 
-/* 4. Profile Dropdown */
 .profileContainer {
   position: relative;
   display: inline-block;
@@ -143,38 +164,33 @@
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease;
-  &:hover {
-    transform: scale(1.1);
-  }
+  &:hover { transform: scale(1.1); }
 }
 
-/* --- vvv UPDATED DROPDOWN STYLES vvv --- */
 .dropdownMenu {
   position: absolute;
-  top: 100%; /* Positions it right below the parent container */
-  margin-top: 10px; /* Adds space but keeps it connected via the ::before arrow */
+  top: 100%;
+  margin-top: 10px;
   right: 0;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* Softer shadow */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid #eee;
-  min-width: 220px; /* Wider */
+  min-width: 220px;
   z-index: 1000;
   padding: 8px 0;
   animation: fadeIn 0.15s ease-out;
 
-  /* Invisible bridge to prevent menu closing */
   &::after {
     content: '';
     position: absolute;
-    top: -10px; /* Covers the 10px gap */
+    top: -10px;
     left: 0;
     right: 0;
     height: 10px;
     background: transparent;
   }
 
-  /* Top arrow */
   &::before {
     content: '';
     position: absolute;
@@ -189,7 +205,33 @@
   }
 }
 
-.dropdownItemButton{
+.dropdownItem {
+  display: block;
+  width: auto;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #444;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #e8f5e9;
+    color: #31694E;
+    padding-left: 25px;
+  }
+
+  &:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+}
+
+.dropdownItembtn {
   display: block;
   padding: 12px 20px; /* More padding */
   background: none;
@@ -204,46 +246,24 @@
   transition: all 0.2s ease;
 
   &:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     border-top: 1px solid #f5f5f5;
-    margin-top: 4px;
-    color: #b91c1c; /* Red text for logout */
-  }
-
-  &:hover {
-      background-color: #fee2e2; /* Light red background */
+    color: #b91c1c;
+    
+    &:hover {
+      background-color: #fee2e2;
       color: #991b1b;
-      padding-left: 25px; /* Keep indent */
+      padding-left: 25px;
     }
   }
-
-.dropdownItem {
-  display: block;
-  padding: 12px 20px; /* More padding */
-  background: none;
-  border: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #444; /* Darker text */
-  text-align: left;
-  text-decoration: none;
-  width: auto;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #e8f5e9; /* Light Green background */
-    color: #31694E; /* Dark Green text */
-    padding-left: 25px; /* Indent on hover */
-  }
 }
-/* --- ^^^ END UPDATED STYLES ^^^ --- */
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 5. CATEGORY BAR */
 .categoryBar {
   background: #fff;
   border-bottom: 1px solid #eee;
@@ -252,14 +272,10 @@
   justify-content: center;
   gap: 30px;
   flex-wrap: nowrap;
-  overflow-x: auto; /* Allow scrolling */
-  
-  /* Hide Scrollbar */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-  &::-webkit-scrollbar { 
-    display: none; /* Chrome, Safari, Opera */
-  }
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
 .categoryItem {
@@ -271,14 +287,13 @@
   color: #555;
   font-weight: 600;
   font-size: 0.9rem;
-  transition: all 0.3s ease;
+  transition: color 0.2s;
   flex-shrink: 0;
   width: 80px;
   text-align: center;
   
   &:hover {
-    color: #31694E; /* Dark Green text on hover */
-    transform: translateY(-3px); /* Subtle lift effect */
+    color: #31694E;
   }
 
   .iconWrapper {
@@ -289,16 +304,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid transparent; /* Reserve space for border */
-    transition: all 0.3s ease;
+    border: 1px solid #eee;
+    transition: all 0.2s;
     color: #31694E;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
 
   &:hover .iconWrapper {
-    background-color: #e8f5e9; /* Light Green background */
-    border-color: #31694E;     /* Dark Green border ring */
-    color: #16a34a;            /* Brighter Green icon */
-    box-shadow: 0 4px 12px rgba(49, 105, 78, 0.2); /* Green glow */
+    background-color: #e8f5e9;
+    border-color: #22c55e;
   }
 }

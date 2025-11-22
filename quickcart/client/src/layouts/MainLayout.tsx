@@ -6,8 +6,10 @@ import { useLocation } from '../contexts/LocationContext';
 import styles from './MainLayout.module.scss';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import LocationModal from '../components/layout/LocationModal';
+import FilterModal from '../components/search/FilterModal'; 
+import ProductDetailModal from '../components/products/ProductDetailModal'; // <-- 1. RE-IMPORT THIS
 
-// --- 1. IMPORT FONT AWESOME ---
+// --- IMPORT FONT AWESOME ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSearch,
@@ -19,23 +21,21 @@ import {
   faFish,
   faGlassWater,
   faCookieBite,
-  faWarehouse
+  faWarehouse,
+  faFilter
 } from '@fortawesome/free-solid-svg-icons';
-// --- END IMPORTS ---
 
-// --- 2. Data for the Category Bar (FIXED LINKS) ---
+// --- Data for the Category Bar ---
 const categoryNavData = [
-  // These links now match your seed.ts and router.tsx
-  { name: 'Vegetables', icon: <FontAwesomeIcon icon={faCarrot} size="xl" />, link: '/category/Vegetables' },
-  { name: 'Fruits', icon: <FontAwesomeIcon icon={faAppleWhole} size="xl" />, link: '/category/Fruits' },
-  { name: 'Dairy & Eggs', icon: <FontAwesomeIcon icon={faEgg} size="xl" />, link: '/category/Dairy & Eggs' },
-  { name: 'Bakery', icon: <FontAwesomeIcon icon={faBreadSlice} size="xl" />, link: '/category/Bakery' },
-  { name: 'Meat & Fish', icon: <FontAwesomeIcon icon={faFish} size="xl" />, link: '/category/Meat & Fish' },
-  { name: 'Beverages', icon: <FontAwesomeIcon icon={faGlassWater} size="xl" />, link: '/category/Beverages' },
-  { name: 'Snacks', icon: <FontAwesomeIcon icon={faCookieBite} size="xl" />, link: '/category/Snacks' },
-  { name: 'Pantry', icon: <FontAwesomeIcon icon={faWarehouse} size="xl" />, link: '/category/Pantry' },
+  { name: 'Vegetables', icon: <FontAwesomeIcon icon={faCarrot} size="lg" />, link: '/category/Vegetables' },
+  { name: 'Fruits', icon: <FontAwesomeIcon icon={faAppleWhole} size="lg" />, link: '/category/Fruits' },
+  { name: 'Dairy & Eggs', icon: <FontAwesomeIcon icon={faEgg} size="lg" />, link: '/category/Dairy & Eggs' },
+  { name: 'Bakery', icon: <FontAwesomeIcon icon={faBreadSlice} size="lg" />, link: '/category/Bakery' },
+  { name: 'Meat & Fish', icon: <FontAwesomeIcon icon={faFish} size="lg" />, link: '/category/Meat & Fish' },
+  { name: 'Beverages', icon: <FontAwesomeIcon icon={faGlassWater} size="lg" />, link: '/category/Beverages' },
+  { name: 'Snacks', icon: <FontAwesomeIcon icon={faCookieBite} size="lg" />, link: '/category/Snacks' },
+  { name: 'Pantry', icon: <FontAwesomeIcon icon={faWarehouse} size="lg" />, link: '/category/Pantry' },
 ];
-// --- END FIX ---
 
 const MainLayout = () => {
   const { itemCount } = useCart();
@@ -52,6 +52,7 @@ const MainLayout = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -84,16 +85,14 @@ const MainLayout = () => {
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim().length === 0) {
-      return;
-    }
+    if (searchQuery.trim().length === 0) return;
+    // Fresh search: go to search page with query
     navigate(`/search?q=${searchQuery}`);
     setSearchQuery('');
   };
 
   return (
     <div>
-      {/* 1. Main Navbar */}
       <nav className={styles.navbar}>
         
         {/* Left Section */}
@@ -109,24 +108,35 @@ const MainLayout = () => {
           </div>
         </div>
 
-        {/* Middle Section (Search) */}
-        <form className={styles.searchContainer} onSubmit={handleSearchSubmit}>
-          <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
-          <input 
-            type="text" 
-            placeholder='Search "bread"' 
-            className={styles.searchInput}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </form>
+        {/* Middle Section (Search + Filter) */}
+        <div className={styles.searchWrapper}>
+          <form className={styles.searchContainer} onSubmit={handleSearchSubmit}>
+            <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
+            <input 
+              type="text" 
+              placeholder='Search "bread"' 
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </form>
+          
+          <button 
+            className={styles.filterButton} 
+            onClick={() => setIsFilterOpen(true)}
+            title="Filter products"
+            type="button"
+          >
+            <FontAwesomeIcon icon={faFilter} />
+          </button>
+        </div>
 
-        {/* Right Section (Profile/Cart) */}
+        {/* Right Section */}
         <div className={styles.navLinks}>
           {user && (
             <>
               {user.role === 'ADMIN' && (
-                <Link to="/admin" className={styles.navLink}>Admin</Link>
+                 <Link to="/admin" className={styles.navLink}>Admin</Link>
               )}
               
               <div className={styles.profileContainer} ref={dropdownRef}>
@@ -142,7 +152,7 @@ const MainLayout = () => {
                     <Link to="/my-orders" className={styles.dropdownItem} onClick={() => setIsDropdownOpen(false)}>My Orders</Link>
                     <Link to="/profile" className={styles.dropdownItem} onClick={() => setIsDropdownOpen(false)}>My Profile</Link>
                     <Link to="/profile/update-password" className={styles.dropdownItem} onClick={() => setIsDropdownOpen(false)}>Update Password</Link>
-                    <button onClick={handleLogout} className={styles.dropdownItemButton}>Logout</button>
+                    <button onClick={handleLogout} className={styles.dropdownItembtn}>Logout</button>
                   </div>
                 )}
               </div>
@@ -158,7 +168,7 @@ const MainLayout = () => {
         </div>
       </nav>
 
-      {/* 2. CATEGORY BAR (Using <Link>) */}
+      {/* Category Bar */}
       <nav className={styles.categoryBar}>
         {categoryNavData.map((item) => (
           <Link to={item.link} key={item.name} className={styles.categoryItem}>
@@ -174,10 +184,13 @@ const MainLayout = () => {
         <Outlet />
       </main>
 
-      <LocationModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-      />
+      {/* --- MODALS --- */}
+      <LocationModal isOpen={isModalOpen} onClose={closeModal} />
+      <FilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} />
+      
+      {/* --- 2. ADDED THIS BACK --- */}
+      <ProductDetailModal /> 
+      
     </div>
   );
 };

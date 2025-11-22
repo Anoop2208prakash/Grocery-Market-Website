@@ -1,159 +1,316 @@
 /* client/src/pages/driver/DriverDashboard.module.scss */
 
 .dashboardContainer {
-  max-width: 800px;
+  // max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px;
+  // padding: 0 20px;
   font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  background-color: #F9F6F1;
+  padding-bottom: 80px;
 }
 
+/* --- 1. HEADER --- */
 .header {
+  background-color: #31694E;
+  color: white;
+  padding: 30px 40px 50px 40px;
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 4px 20px rgba(49, 105, 78, 0.3);
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  border-bottom: 3px solid #F0E491; /* Cream accent */
-  padding-bottom: 20px;
+  align-items: flex-start;
 
   h1 {
     margin: 0;
-    color: #31694E; /* Dark Green */
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    letter-spacing: -0.5px;
+    
+    svg { opacity: 0.9; }
+  }
+
+  small {
+    display: block;
+    opacity: 0.9;
+    font-size: 1rem;
+    margin-top: 6px;
+    font-weight: 500;
+    color: #F0E491;
   }
 }
 
 .logoutButton {
-  padding: 8px 16px;
-  background-color: transparent;
-  color: #31694E;
-  border: 2px solid #31694E;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s;
+  backdrop-filter: blur(5px);
 
   &:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+}
+
+/* --- 2. FLOATING STATUS BAR --- */
+.statusBar {
+  margin: -35px 40px 30px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 20px 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 10;
+  border: 1px solid rgba(0,0,0,0.02);
+}
+
+.statusLabel {
+  font-weight: 700;
+  color: #444;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusToggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  
+  &.online { 
+    color: #16a34a; 
+    background: #dcfce7;
+    padding: 8px 16px;
+    border-radius: 30px;
+    border: 1px solid #31694E;
+  }
+  
+  &.offline { 
+    color: #666; 
+    background: #f3f4f6;
+    padding: 8px 16px;
+    border-radius: 30px;
+    border: 1px solid #ccc;
+  }
+}
+
+/* --- 3. TABS --- */
+.tabs {
+  display: flex;
+  padding: 0 40px;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.tab {
+  flex: 1;
+  padding: 14px;
+  text-align: center;
+  background: white;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  white-space: nowrap;
+  font-size: 1rem;
+
+  &.active {
     background-color: #31694E;
     color: white;
+    box-shadow: 0 4px 12px rgba(49, 105, 78, 0.25);
+    border-color: #31694E;
   }
-}
-
-.section {
-  margin-bottom: 50px;
-
-  h2 {
+  
+  &:hover:not(.active) {
+    background-color: #f0fdf4;
     color: #31694E;
-    margin-bottom: 20px;
-    font-size: 1.4rem;
-    border-left: 5px solid #BBC863; /* Olive border */
-    padding-left: 15px;
+    transform: translateY(-2px);
   }
 }
 
-.cardGrid {
-  display: grid;
-  gap: 20px;
+/* --- 4. CONTENT AREA --- */
+.contentArea {
+  padding: 0 40px;
 }
 
-/* Base Card Style */
+/* --- 5. JOB CARDS --- */
+.cardList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+}
+
 .card {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid #f0f0f0;
+  transition: transform 0.2s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  }
-
-  h3 {
-    margin: 0;
-    color: #31694E;
-    font-size: 1.1rem;
-  }
-
-  p {
-    margin: 8px 0;
-    color: #555;
-    font-size: 0.95rem;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
   }
 }
 
-/* "My Active Deliveries" Card Variant */
 .activeCard {
   @extend .card;
-  border: 2px solid #658C58; /* Medium Green border */
-  background-color: #FDFDF5; /* Very light cream background */
-
-  h3 {
-    color: #244f3a;
-  }
+  border-left: 6px solid #BBC863;
+  background: linear-gradient(to right, #fffff0 0%, #ffffff 40%);
 }
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed #eee;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #31694E;
+    font-weight: 800;
+  }
 }
 
-.statusBadge {
-  background-color: #F0E491; /* Cream */
+.badge {
+  background: #F0E491;
   color: #31694E;
-  padding: 4px 10px;
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* Buttons */
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.5;
+  
+  svg {
+    color: #658C58;
+    width: 18px;
+    margin-top: 3px;
+  }
+  
+  strong {
+    color: #222;
+    font-weight: 600;
+  }
+}
+
 .actionButton {
   width: 100%;
-  padding: 12px;
-  margin-top: 12px;
+  padding: 16px;
   border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
-}
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 
-.acceptButton {
-  @extend .actionButton;
-  background-color: #31694E; /* Dark Green */
-  color: white;
-
-  &:hover {
-    background-color: #244f3a;
+  &:active {
+    transform: scale(0.98);
   }
 }
 
-.completeButton {
-  @extend .actionButton;
-  background-color: #658C58; /* Medium Green */
+.acceptBtn {
+  background-color: #31694E;
   color: white;
-
-  &:hover {
-    background-color: #4e7042;
-  }
+  &:hover { background-color: #244f3a; }
 }
 
-.emptyMessage {
-  color: #888;
-  background: #f9f9f9;
+.completeBtn {
+  background-color: #658C58;
+  color: white;
+  &:hover { background-color: #4e7042; }
+}
+
+/* --- 6. EARNINGS STATS (UPDATED) --- */
+.earningsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 Columns for stats */
+  gap: 25px;
+}
+
+.statBox {
+  background: white;
   padding: 30px;
-  border-radius: 8px;
+  border-radius: 16px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  
+  /* --- vvv FLEXBOX CENTERING vvv --- */
   text-align: center;
-  border: 1px dashed #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* Centers horizontally */
+  justify-content: center; /* Centers vertically */
+  /* --- ^^^ END ADD ^^^ --- */
+  
+  h4 { 
+    margin: 0 0 10px 0; 
+    color: #888; 
+    font-size: 0.9rem; 
+    text-transform: uppercase; 
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  
+  p { 
+    margin: 0; 
+    font-size: 2.5rem; 
+    font-weight: 800; 
+    color: #31694E; 
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80px;
+  color: #aaa;
+  font-style: italic;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #eee;
+  margin: 0 auto;
+  max-width: 600px;
 }
