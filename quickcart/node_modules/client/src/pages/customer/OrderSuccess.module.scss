@@ -1,65 +1,101 @@
 /* client/src/pages/customer/OrderSuccess.module.scss */
 
-.successPage {
+.container {
   max-width: 600px;
-  margin: 60px auto;
-  padding: 50px;
-  text-align: center;
-  background: #FDFDF5; /* Very light cream background */
+  margin: 40px auto;
+  padding: 30px;
+  background: white;
   border-radius: 16px;
-  border: 2px solid #BBC863; /* Olive border */
-  box-shadow: 0 10px 30px rgba(49, 105, 78, 0.1); /* Green tinted shadow */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  text-align: center;
+  border: 1px solid #eee;
 }
 
-.icon {
-  font-size: 5rem;
-  color: #658C58; /* Medium Green */
+.successIcon {
+  font-size: 4rem;
+  color: #31694E;
   margin-bottom: 20px;
   animation: popIn 0.5s ease;
 }
 
-.title {
-  font-size: 2.5rem;
-  margin: 0 0 15px 0;
-  color: #31694E; /* Dark Green */
-  font-weight: 800;
-}
-
-.message {
-  font-size: 1.2rem;
-  color: #555;
-  margin-bottom: 25px;
-  line-height: 1.6;
+h1 {
+  color: #31694E;
+  margin-bottom: 10px;
 }
 
 .orderId {
-  font-size: 1rem;
-  color: #31694E;
-  background: #e8f5e9;
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: 8px;
-  margin-bottom: 40px;
-  font-family: monospace;
-  border: 1px dashed #658C58;
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 30px;
+  span { font-weight: 700; color: #333; }
 }
 
-.link {
-  text-decoration: none;
-  background: #31694E; /* Dark Green */
+/* Driver Info Card */
+.driverCard {
+  background: #fdfdf5;
+  border: 1px solid #BBC863;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 30px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 { margin: 0 0 5px 0; color: #31694E; }
+  p { margin: 0; color: #666; font-size: 0.9rem; }
+}
+
+.callButton {
+  background: #31694E;
   color: white;
-  padding: 14px 28px;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    background: #244f3a;
+  }
+}
+
+/* --- NEW: Invoice Button Style --- */
+.invoiceButton {
+  background-color: #fff;
+  color: #31694E;
+  border: 2px solid #31694E;
+  padding: 10px 20px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
 
   &:hover {
-    background: #658C58; /* Medium Green */
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    background-color: #31694E;
+    color: white;
   }
+}
+
+/* Updated Home Button to sit next to Invoice Button */
+.homeButton {
+  display: inline-flex; /* Changed from inline-block */
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px; /* Match button padding */
+  /* Removed margin-top: 30px; -> handled by parent container now */
+  color: #31694E;
+  text-decoration: none;
+  font-weight: 600;
+  border: 2px solid transparent; /* Invisible border for alignment */
+  
+  &:hover { text-decoration: underline; }
 }
 
 @keyframes popIn {

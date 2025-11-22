@@ -2,21 +2,49 @@ import { useState, useEffect } from 'react';
 import apiClient from '../../services/apiClient';
 import styles from './Dashboard.module.scss';
 import {
-  LineChart, Line, BarChart, Bar,
-  AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
 } from 'recharts';
 
 // --- Types for our data ---
-interface Order { totalPrice: number; }
-interface Product { totalStock: number; }
-interface StatCardData { totalOrders: number; totalRevenue: number; totalProducts: number; lowStockCount: number; }
+interface Order {
+  totalPrice: number;
+  status: string; // <-- 1. Added status so we can filter
+}
 
-// Chart Data Types
-interface ChartData { date: string; total: number; }
-interface ApiChartData { date: string; total: string; }
+interface Product {
+  totalStock: number;
+}
+
+interface StatCardData {
+  totalOrders: number;
+  totalRevenue: number;
+  totalProducts: number;
+  lowStockCount: number;
+}
+
+interface ChartData {
+  date: string;
+  total: number;
+}
+
+interface ApiChartData {
+  date: string;
+  total: string;
+}
+
 interface CategoryChartData { name: string; count: number; }
 interface LowStockItem { id: string; quantity: number; product: { name: string; sku: string; } }
+
 type Period = 'daily' | 'weekly' | 'monthly' | 'yearly';
 // --- End Types ---
 
@@ -61,18 +89,27 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        setLoading(true);
         const [productsRes, ordersRes] = await Promise.all([
           apiClient.get<Product[]>('/products'),
           apiClient.get<Order[]>('/orders'),
         ]);
+
         const products = productsRes.data;
         const orders = ordersRes.data;
-        setStats({
-          totalRevenue: orders.reduce((acc, order) => acc + order.totalPrice, 0),
-          totalOrders: orders.length,
-          totalProducts: products.length,
-          lowStockCount: products.filter((p) => p.totalStock < 20).length,
-        });
+
+        // --- 2. THIS IS THE FIX ---
+        // Filter out cancelled orders BEFORE calculating
+        const validOrders = orders.filter(order => order.status !== 'CANCELLED');
+        
+        const totalRevenue = validOrders.reduce((acc, order) => acc + order.totalPrice, 0);
+        const totalOrders = validOrders.length;
+        // --- END FIX ---
+
+        const totalProducts = products.length;
+        const lowStockCount = products.filter((p) => p.totalStock < 20).length;
+
+        setStats({ totalOrders, totalRevenue, totalProducts, lowStockCount });
       } catch (error) { console.error("Failed to load dashboard stats", error); }
       finally { setLoading(false); }
     };

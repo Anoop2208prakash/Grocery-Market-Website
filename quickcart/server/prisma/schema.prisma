@@ -153,9 +153,9 @@ model Order {
   status        OrderStatus @default(PENDING)
   totalPrice    Float
   
-  // --- ADDED PAYMENT METHOD ---
+  // --- PAYMENT METHOD ---
   paymentMethod PaymentMethod @default(COD)
-  // ----------------------------
+  // ----------------------
 
   addressId     String?
   address       Address?    @relation(fields: [addressId], references: [id], onDelete: SetNull)
@@ -167,7 +167,7 @@ model Order {
   delivery      Delivery?
 }
 
-// --- ADDED PAYMENT ENUM ---
+// --- PAYMENT ENUM ---
 enum PaymentMethod {
   WALLET
   UPI
@@ -209,4 +209,16 @@ model Delivery {
   // For live tracking
   driverLat     Float?
   driverLng     Float?
+}
+
+// ------------------------------------
+// BANNER MODEL (NEW)
+// ------------------------------------
+model Banner {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  title     String?
+  subtitle  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 }
