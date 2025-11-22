@@ -159,3 +159,64 @@
     cursor: not-allowed;
   }
 }
+
+/* --- NEW: Free Delivery Bar --- */
+.deliveryProgress {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+
+  p {
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+    color: #444;
+    font-weight: 600;
+    
+    span {
+      color: #31694E; /* Brand Green */
+      font-weight: 800;
+    }
+  }
+}
+
+.progressBarBg {
+  width: 100%;
+  height: 8px;
+  background-color: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: #31694E; /* Dark Green */
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  
+  /* Striped animation */
+  background-image: linear-gradient(
+    45deg, 
+    rgba(255,255,255,0.15) 25%, 
+    transparent 25%, 
+    transparent 50%, 
+    rgba(255,255,255,0.15) 50%, 
+    rgba(255,255,255,0.15) 75%, 
+    transparent 75%, 
+    transparent
+  );
+  background-size: 1rem 1rem;
+}
+
+.unlockedBadge {
+  background-color: #e8f5e9;
+  color: #16a34a;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 0;
+  border: 1px solid #16a34a;
+}

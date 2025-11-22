@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
-import { AxiosError } from 'axios';
 import ProductCard from '../../components/common/ProductCard';
 import styles from './SearchPage.module.scss';
 
-// Type to match the product data from the API
 interface Product {
   id: string;
   name: string;
@@ -16,59 +14,62 @@ interface Product {
 const SearchPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   
   const [searchParams] = useSearchParams();
-  const query = searchParams.get('q'); // Gets 'bread' from /search?q=bread
+  
+  // Get params from URL
+  const query = searchParams.get('q') || '';
+  const minPrice = searchParams.get('minPrice');
+  const maxPrice = searchParams.get('maxPrice');
+  const categoryId = searchParams.get('categoryId');
+  const sort = searchParams.get('sort');
 
   useEffect(() => {
-    if (!query) {
-      setError('Please enter a search term.');
-      setLoading(false);
-      return;
-    }
-
     const fetchProducts = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        // Call API with the search query (using the backend fix)
-        const { data } = await apiClient.get<Product[]>(`/products?search=${query}`);
+        // Build query string for API
+        const params = new URLSearchParams();
+        if (query) params.append('search', query);
+        if (minPrice) params.append('minPrice', minPrice);
+        if (maxPrice) params.append('maxPrice', maxPrice);
+        if (categoryId) params.append('categoryId', categoryId);
+        if (sort) params.append('sort', sort);
+
+        const { data } = await apiClient.get<Product[]>(`/products?${params.toString()}`);
         setProducts(data);
-        setError('');
       } catch (err) {
         console.error(err);
-        let message = 'Failed to fetch products';
-        if (err instanceof AxiosError) message = err.response?.data?.message || message;
-        setError(message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProducts();
-  }, [query]); // Re-run search every time the URL query changes
-
-  if (loading) return <div className={styles.loading}>Searching...</div>;
-  if (error) return <div className={styles.error}>{error}</div>;
+  }, [query, minPrice, maxPrice, categoryId, sort]);
 
   return (
-    <div>
-      <h1 className={styles.title}>
-        Search Results for: <span>"{query}"</span>
-      </h1>
-      
-      {products.length === 0 ? (
-        <div className={styles.noResults}>No products found matching your search.</div>
-      ) : (
-        <div className={styles.grid}>
-          {products.map(product => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-            />
-          ))}
+    <div className={styles.container}>
+        <div className={styles.resultsHeader}>
+          <h1>
+             {query ? <>Results for: <span>"{query}"</span></> : 'All Products'}
+          </h1>
+          <span>{products.length} items found</span>
         </div>
-      )}
+
+        {loading ? (
+          <div className={styles.loading}>Loading...</div>
+        ) : products.length === 0 ? (
+          <div className={styles.noResults}>No products found matching your search.</div>
+        ) : (
+          <div className={styles.grid}>
+            {products.map(product => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+              />
+            ))}
+          </div>
+        )}
     </div>
   );
 };

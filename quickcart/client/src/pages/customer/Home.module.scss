@@ -1,23 +1,53 @@
 /* client/src/pages/customer/Home.module.scss */
 
-/* This is the large carrot image at the top */
-.banner {
-  width: 100%;
-  height: 250px;
-  background-image: url('src/assets/banner.jpg');
+/* --- HERO CAROUSEL STYLES --- */
+.carouselWrapper {
+  margin-bottom: 40px;
+  border-radius: 16px;
+  overflow: hidden; /* Ensures slides stay inside rounded corners */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.bannerSlide {
+  height: 280px; /* Fixed height for the banner */
   background-size: cover;
   background-position: center;
-  border-radius: 16px;
-  margin-bottom: 30px;
+  display: flex;
+  align-items: flex-end; /* Align text to bottom */
+  justify-content: flex-start; /* Align text to left */
+  text-align: left;
+  
+  /* Dark gradient overlay so text is readable on any image */
+  box-shadow: inset 0 -120px 120px -20px rgba(0,0,0,0.7);
 }
 
+.bannerContent {
+  padding: 40px 50px;
+  color: white;
+  max-width: 600px;
+  
+  h2 {
+    font-size: 2.5rem;
+    margin: 0 0 10px 0;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  
+  p {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    opacity: 0.9;
+  }
+}
+
+/* --- CATEGORY SECTIONS --- */
 .categorySection {
-  margin-bottom: 40px;
+  margin-bottom: 50px;
 }
 
-/* --- vvv THIS IS THE UPDATED SECTION vvv --- */
-
-/* 1. This is the new flex container for the header */
+/* Header with Title and "See All" button */
 .categoryHeader {
   display: flex;
   justify-content: space-between;
@@ -27,15 +57,13 @@
   padding-left: 15px;
 }
 
-/* 2. This is just the text */
 .categoryTitle {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #333;
-  margin: 0; /* Remove default margins */
+  margin: 0;
 }
 
-/* 3. This is the new "see all" button */
 .seeAllButton {
   background-color: #31694E;
   color: white;
@@ -48,24 +76,23 @@
   flex-shrink: 0;
 
   &:hover {
-    background-color: #658C58;
+    background-color: #658C58; /* Medium Green */
   }
 }
-/* --- ^^^ END UPDATED SECTION ^^^ --- */
 
-
-/* This is the key for horizontal scrolling */
+/* Horizontal Scrolling Row for Products */
 .productRow {
   display: flex;
   flex-direction: row;
-  overflow-x: auto;
+  overflow-x: auto; /* Enable horizontal scroll */
   gap: 20px;
-  padding: 10px 5px; /* Add padding so shadows aren't cut off */
+  padding: 10px 5px; /* Padding for shadow visibility */
   
-  /* Hides the scrollbar but keeps it scrollable */
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  /* Hide scrollbar for a cleaner look */
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+  
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 }

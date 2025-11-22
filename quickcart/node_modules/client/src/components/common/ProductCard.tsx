@@ -1,14 +1,18 @@
 import styles from './ProductCard.module.scss';
 import { useCart } from '../../contexts/CartContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useProductModal } from '../../contexts/ProductModalContext'; // <-- 1. Re-import this
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCartPlus, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'; // Added faMinus, faPlus
+import { faCartPlus, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
+import React from 'react';
 
 interface Product {
   id: string;
   name: string;
   price: number;
   imageUrl?: string;
+  description?: string;
+  totalStock?: number;
 }
 
 interface ProductCardProps {
@@ -16,17 +20,18 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  // 1. Get all cart functions we need
   const { addToCart, cartItems, updateQuantity, removeFromCart } = useCart();
   const { showToast } = useToast();
+  const { openProductModal } = useProductModal(); // <-- 2. Get the open function
 
-  // 2. Check if product is already in cart
+  // Check cart state
   const cartItem = cartItems.find(item => item.id === product.id);
   const quantity = cartItem ? cartItem.quantity : 0;
 
   // --- Handlers ---
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent modal from opening
     addToCart({
       id: product.id,
       name: product.name,
@@ -36,11 +41,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
     showToast(`${product.name} added to cart!`, 'success');
   };
 
-  const handleIncrement = () => {
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent modal from opening
     updateQuantity(product.id, quantity + 1);
   };
 
-  const handleDecrement = () => {
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent modal from opening
     if (quantity > 1) {
       updateQuantity(product.id, quantity - 1);
     } else {
@@ -49,32 +56,30 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
-  // --- Image Fix Logic ---
+  // --- Image Helper ---
   const getImageUrl = (url?: string | null) => {
     const placeholderImg = 'https://via.placeholder.com/300x300.png?text=No+Image';
-
     if (!url) return placeholderImg;
-    
-    if (url.startsWith('http') || url.startsWith('https')) {
-      return url;
-    }
-
+    if (url.startsWith('http') || url.startsWith('https')) return url;
     return `http://localhost:5000${url}`;
   };
 
-  const imageSrc = getImageUrl(product.imageUrl);
-
   return (
-    <div className={styles.card}>
+    <div 
+      className={styles.card} 
+      onClick={() => openProductModal(product)} // <-- 3. Re-add the click handler
+      style={{ cursor: 'pointer' }} 
+    >
       <div className={styles.imageWrapper}>
-        <img src={imageSrc} alt={product.name} />
+        <img src={getImageUrl(product.imageUrl)} alt={product.name} />
       </div>
+      
       <h3 className={styles.name}>{product.name}</h3>
       <p className={styles.price}>₹{product.price.toFixed(2)}</p>
       
-      {/* 3. Conditional Rendering: Show Quantity Controls or Add Button */}
+      {/* 4. Quantity Controls / Add Button */}
       {quantity > 0 ? (
-        <div className={styles.quantityControl}>
+        <div className={styles.quantityControl} onClick={(e) => e.stopPropagation()}>
           <button onClick={handleDecrement} className={styles.qtyBtn}>
             <FontAwesomeIcon icon={faMinus} />
           </button>
@@ -84,10 +89,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </button>
         </div>
       ) : (
-        <button
-          className={styles.addButton}
-          onClick={handleAddToCart}
-        >
+        <button className={styles.addButton} onClick={handleAddToCart}>
           <FontAwesomeIcon icon={faCartPlus} style={{ marginRight: '8px' }} />
           Add to Cart
         </button>

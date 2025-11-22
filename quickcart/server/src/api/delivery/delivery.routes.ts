@@ -3,7 +3,8 @@ import {
   getAvailableOrders, 
   getMyDeliveries, 
   acceptOrder, 
-  completeDelivery 
+  completeDelivery,
+  getDriverStats // <-- 1. Import this
 } from './delivery.controller';
 import { protect } from '../auth/auth.middleware';
 
@@ -14,6 +15,7 @@ router.use(protect);
 
 router.get('/available', getAvailableOrders);
 router.get('/my-deliveries', getMyDeliveries);
+router.get('/stats', getDriverStats); // <-- 2. Add this route
 router.post('/:orderId/accept', acceptOrder);
 router.put('/:deliveryId/complete', completeDelivery);
 
