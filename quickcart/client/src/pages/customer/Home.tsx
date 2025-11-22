@@ -6,7 +6,7 @@ import ProductCard from '../../components/common/ProductCard';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from './Home.module.scss';
 
-// 1. Import Carousel and its styles
+// Carousel Imports
 import "react-responsive-carousel/lib/styles/carousel.min.css"; 
 import { Carousel } from 'react-responsive-carousel';
 
@@ -23,13 +23,18 @@ interface CategoryWithProducts {
   products: Product[];
 }
 
+interface Banner {
+  id: string;
+  imageUrl: string;
+  title: string;
+  subtitle: string;
+}
+
 const Home = () => {
   const { user } = useAuth();
   const [categories, setCategories] = useState<CategoryWithProducts[]>([]);
-  
-  // 2. State for personalized products
   const [buyAgainProducts, setBuyAgainProducts] = useState<Product[]>([]);
-  
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -37,19 +42,19 @@ const Home = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // 3. Always fetch standard categories
         const categoryReq = apiClient.get<CategoryWithProducts[]>('/categories/products');
         
-        // 4. Only fetch "Buy Again" if user is logged in
         const buyAgainReq = user 
           ? apiClient.get<Product[]>('/products/buy-again')
           : Promise.resolve({ data: [] });
 
-        const [catRes, buyRes] = await Promise.all([categoryReq, buyAgainReq]);
+        const bannersReq = apiClient.get<Banner[]>('/banners');
+
+        const [catRes, buyRes, banRes] = await Promise.all([categoryReq, buyAgainReq, bannersReq]);
         
         setCategories(catRes.data);
         setBuyAgainProducts(buyRes.data);
+        setBanners(banRes.data);
         setError('');
       } catch (err) {
         console.error(err);
@@ -71,7 +76,7 @@ const Home = () => {
 
   return (
     <div>
-      {/* --- 5. HERO CAROUSEL --- */}
+      {/* --- HERO CAROUSEL --- */}
       <div className={styles.carouselWrapper}>
         <Carousel 
           showThumbs={false} 
@@ -81,28 +86,42 @@ const Home = () => {
           interval={3000}
           showArrows={false}
         >
-          <div className={styles.bannerSlide} style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974')` }}>
-            <div className={styles.bannerContent}>
-              <h2>Fresh Vegetables</h2>
-              <p>Farm fresh to your door in 10 mins.</p>
-            </div>
-          </div>
-          <div className={styles.bannerSlide} style={{ backgroundImage: `url('https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1974')` }}>
-            <div className={styles.bannerContent}>
-              <h2>Summer Fruits</h2>
-              <p>Sweet, juicy, and ready to eat.</p>
-            </div>
-          </div>
-          <div className={styles.bannerSlide} style={{ backgroundImage: `url('https://images.unsplash.com/photo-1608198093002-ad4e005484ec?q=80&w=2032')` }}>
-            <div className={styles.bannerContent}>
-              <h2>Daily Essentials</h2>
-              <p>Milk, Bread, and Eggs restocked daily.</p>
-            </div>
-          </div>
+          {/* --- vvv THIS WAS THE FIX (ADDED CURLY BRACES) vvv --- */}
+          {banners.length > 0 ? (
+            banners.map(banner => (
+              <div 
+                key={banner.id} 
+                className={styles.bannerSlide} 
+                style={{ backgroundImage: `url('http://localhost:5000${banner.imageUrl}')` }}
+              >
+                <div className={styles.bannerContent}>
+                  <h2>{banner.title}</h2>
+                  <p>{banner.subtitle}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            // Fallback to Static Banners
+            [
+              <div key="static1" className={styles.bannerSlide} style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974')` }}>
+                <div className={styles.bannerContent}>
+                  <h2>Fresh Vegetables</h2>
+                  <p>Farm fresh to your door in 10 mins.</p>
+                </div>
+              </div>,
+              <div key="static2" className={styles.bannerSlide} style={{ backgroundImage: `url('https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1974')` }}>
+                <div className={styles.bannerContent}>
+                  <h2>Summer Fruits</h2>
+                  <p>Sweet, juicy, and ready to eat.</p>
+                </div>
+              </div>
+            ]
+          )}
+          {/* --- ^^^ END FIX ^^^ --- */}
         </Carousel>
       </div>
 
-      {/* --- 6. "BUY IT AGAIN" SECTION (Only if logged in & has history) --- */}
+      {/* --- "BUY IT AGAIN" SECTION --- */}
       {user && buyAgainProducts.length > 0 && (
         <section className={styles.categorySection}>
           <div className={styles.categoryHeader} style={{ borderLeftColor: '#BBC863' }}>
@@ -116,7 +135,7 @@ const Home = () => {
         </section>
       )}
 
-      {/* --- 7. STANDARD CATEGORIES --- */}
+      {/* --- STANDARD CATEGORIES --- */}
       {categories.map(category => (
         <section 
           key={category.id} 
@@ -125,7 +144,6 @@ const Home = () => {
         >
           <div className={styles.categoryHeader}>
             <h2 className={styles.categoryTitle}>{category.name}</h2>
-            
             <Link 
               to={`/category/${category.name}`} 
               className={styles.seeAllButton}

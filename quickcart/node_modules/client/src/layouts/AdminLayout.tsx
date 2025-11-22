@@ -32,6 +32,12 @@ const AdminLayout = () => {
             <li>
               <Link to="/admin/inventory">Inventory</Link>
             </li>
+            <li>
+              <Link to="/admin/banners">Banners</Link>
+            </li>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
           </ul>
         </nav>
 

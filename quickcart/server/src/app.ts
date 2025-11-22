@@ -10,6 +10,8 @@ import userRoutes from './api/users/user.routes';
 import locationRoutes from './api/location/location.routes';
 import uploadRoutes from './api/upload/upload.routes';
 import walletRoutes from './api/wallet/wallet.routes';
+import invoiceRoutes from './api/invoice/invoice.routes';
+import bannerRoutes from './api/banners/banner.routes';
 
 const app = express();
 
@@ -38,5 +40,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/wallet', walletRoutes);
+app.use('/api/invoice', invoiceRoutes);
+app.use('/api/banners', bannerRoutes);
 
 export default app;
