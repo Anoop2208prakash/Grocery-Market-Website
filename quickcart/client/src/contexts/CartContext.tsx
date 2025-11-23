@@ -1,16 +1,17 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-// Define the shape of a product in the cart
+// 1. Update Interface to include substitution preference
 interface CartItem {
   id: string; // Product ID
   name: string;
   price: number;
   imageUrl?: string;
   quantity: number;
+  substitution: 'REFUND' | 'REPLACE'; // <-- NEW FIELD
 }
 
-// Helper type for adding items (quantity is optional/handled internally)
-type Product = Omit<CartItem, 'quantity'>;
+// Helper type for adding items (quantity & substitution are handled internally)
+type Product = Omit<CartItem, 'quantity' | 'substitution'>;
 
 // Define the shape of the Context
 interface CartContextType {
@@ -18,8 +19,11 @@ interface CartContextType {
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
+  // --- vvv NEW FUNCTION vvv ---
+  updateSubstitution: (productId: string, policy: 'REFUND' | 'REPLACE') => void;
+  // ----------------------------
   clearCart: () => void;
-  addItems: (products: Product[]) => void; // <-- NEW: Bulk add function
+  addItems: (products: Product[]) => void;
   itemCount: number;
 }
 
@@ -58,16 +62,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : item
         );
       } else {
-        // If new item, add to cart with quantity 1
-        return [...prevItems, { ...product, quantity: 1 }];
+        // If new item, add to cart with quantity 1 and default substitution
+        return [...prevItems, { ...product, quantity: 1, substitution: 'REFUND' }];
       }
     });
   };
 
-  // --- NEW: Bulk Add Function (For Reorder) ---
+  // Bulk Add Function (For Reorder)
   const addItems = (products: Product[]) => {
     setCartItems((prevItems) => {
-      // Create a deep copy or map to avoid mutation issues
       const newCart = [...prevItems];
 
       products.forEach((product) => {
@@ -80,15 +83,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             quantity: newCart[existingItemIndex].quantity + 1
           };
         } else {
-          // Add new item with quantity 1
-          newCart.push({ ...product, quantity: 1 });
+          // Add new item with quantity 1 and default substitution
+          newCart.push({ ...product, quantity: 1, substitution: 'REFUND' });
         }
       });
 
       return newCart;
     });
   };
-  // --- END NEW FUNCTION ---
 
   const removeFromCart = (productId: string) => {
     setCartItems((prevItems) =>
@@ -98,7 +100,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity <= 0) {
-      // If quantity is 0 or less, remove the item
       removeFromCart(productId);
     } else {
       setCartItems((prevItems) =>
@@ -108,6 +109,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       );
     }
   };
+
+  // --- vvv NEW FUNCTION IMPLEMENTATION vvv ---
+  const updateSubstitution = (productId: string, policy: 'REFUND' | 'REPLACE') => {
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === productId ? { ...item, substitution: policy } : item
+      )
+    );
+  };
+  // --- ^^^ END NEW FUNCTION ^^^ ---
 
   const clearCart = () => {
     setCartItems([]);
@@ -122,8 +133,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         addToCart,
         removeFromCart,
         updateQuantity,
+        updateSubstitution, // <-- Export it
         clearCart,
-        addItems, // <-- Export the new function
+        addItems,
         itemCount,
       }}
     >

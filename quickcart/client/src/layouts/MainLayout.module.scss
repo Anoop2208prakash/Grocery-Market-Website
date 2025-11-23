@@ -1,15 +1,17 @@
 /* client/src/layouts/MainLayout.module.scss */
 
+/* The main navbar container */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 30px;
   padding: 15px 30px;
-  background-color: #31694E;
-  border-bottom: 4px solid #BBC863;
+  background-color: #31694E; /* Dark Green */
+  border-bottom: 4px solid #BBC863; /* Olive accent */
 }
 
+/* 1. Left Side: Logo + Delivery */
 .brandSection {
   display: flex;
   align-items: center;
@@ -21,7 +23,7 @@
   font-size: 2rem;
   font-weight: 800;
   text-decoration: none;
-  color: #F0E491;
+  color: #F0E491; /* Cream text */
   letter-spacing: -1px;
 }
 
@@ -34,20 +36,19 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 700;
-    color: #ffffff;
+    color: #ffffff; /* White text */
   }
   
   span {
     font-size: 0.9rem;
-    color: #eee;
+    color: #eee; /* Light text */
     display: flex;
     align-items: center;
     gap: 4px;
   }
 }
 
-/* --- vvv NEW SEARCH WRAPPER vvv --- */
-/* Keeps search bar and filter button together */
+/* 2. Center: Search Wrapper */
 .searchWrapper {
   flex-grow: 1;
   max-width: 600px;
@@ -64,13 +65,16 @@
     width: 100%;
     padding: 12px 20px 12px 45px;
     font-size: 1rem;
-    border: 1px solid #658C58;
-    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid #658C58; /* Medium Green border */
+    background-color: rgba(255, 255, 255, 0.1); /* Transparent white */
     color: white;
     border-radius: 8px;
-    box-sizing: border-box; /* Fixes width issues */
+    box-sizing: border-box;
 
-    &::placeholder { color: #eee; }
+    &::placeholder {
+      color: #eee;
+    }
+
     &:focus {
       outline: none;
       border-color: #F0E491;
@@ -110,8 +114,77 @@
     transform: translateY(-1px);
   }
 }
-/* --- ^^^ END NEW STYLES ^^^ --- */
 
+/* --- vvv NEW: Search Suggestions Dropdown vvv --- */
+.suggestionsDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 0 0 12px 12px; /* Rounded bottom only */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 1000;
+  border: 1px solid #eee;
+  border-top: none;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.suggestionItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #fdfdf5; /* Light Cream */
+  }
+
+  img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #fff;
+    border: 1px solid #eee;
+  }
+
+  .suggestionInfo {
+    display: flex;
+    flex-direction: column;
+    
+    h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 600;
+    }
+    
+    span {
+      font-size: 0.8rem;
+      color: #888;
+    }
+  }
+  
+  .suggestionPrice {
+    margin-left: auto;
+    font-weight: 700;
+    color: #31694E;
+    font-size: 0.9rem;
+  }
+}
+/* --- ^^^ END SUGGESTIONS STYLES ^^^ --- */
+
+
+/* 3. Right Side: Links + Profile + Cart */
 .navLinks {
   display: flex;
   align-items: center;
@@ -127,12 +200,16 @@
   color: #ffffff;
   font-weight: 600;
   transition: background 0.2s;
-  &:hover { background: #658C58; }
+
+  &:hover {
+    background: #658C58;
+  }
 }
 
 .cartLink {
   @extend .navLink;
   background: rgba(255, 255, 255, 0.1);
+  
   .cartCount {
     margin-left: 8px;
     background: #F0E491;
@@ -144,6 +221,7 @@
   }
 }
 
+/* 4. Profile Dropdown */
 .profileContainer {
   position: relative;
   display: inline-block;
@@ -164,7 +242,9 @@
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease;
-  &:hover { transform: scale(1.1); }
+  &:hover {
+    transform: scale(1.1);
+  }
 }
 
 .dropdownMenu {
@@ -207,7 +287,7 @@
 
 .dropdownItem {
   display: block;
-  width: auto;
+  width: 100%;
   padding: 12px 20px;
   background: none;
   border: none;
@@ -233,12 +313,12 @@
 
 .dropdownItemBtn {
   display: block;
-  padding: 12px 20px; /* More padding */
+  padding: 12px 20px;
   background: none;
   border: none;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #444; /* Darker text */
+  color: #444;
   text-align: left;
   text-decoration: none;
   width: 100%;
@@ -264,6 +344,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* 5. CATEGORY BAR */
 .categoryBar {
   background: #fff;
   border-bottom: 1px solid #eee;
@@ -273,9 +354,12 @@
   gap: 30px;
   flex-wrap: nowrap;
   overflow-x: auto;
+  
   -ms-overflow-style: none;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar { 
+    display: none;
+  }
 }
 
 .categoryItem {
@@ -293,7 +377,7 @@
   text-align: center;
   
   &:hover {
-    color: #31694E;
+    color: #22c55e;
   }
 
   .iconWrapper {

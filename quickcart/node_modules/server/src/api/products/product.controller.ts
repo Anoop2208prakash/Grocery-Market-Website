@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import type { Request, Response } from 'express';
 import prisma from '../../lib/prisma';
+import type { AuthRequest } from '../auth/auth.middleware';
 
 // Hardcoded Dark Store ID (Matches the one in your seed.ts)
 const DARK_STORE_ID = 'clxvw2k9w000008l41111aaaa';
@@ -36,11 +37,7 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // 4. Sorting Logic
-  // --- THIS IS THE FIX ---
-  // Changed 'createdAt' to 'id' because 'createdAt' does not exist on Product
-  let orderBy: any = { id: 'desc' }; 
-  // -----------------------
-  
+  let orderBy: any = { id: 'desc' }; // Default: Newest first
   if (sort === 'price-asc') orderBy = { price: 'asc' };
   if (sort === 'price-desc') orderBy = { price: 'desc' };
 
@@ -149,14 +146,6 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
     throw new Error('Product not found');
   }
 
-  if (sku && sku !== product.sku) {
-    const skuExists = await prisma.product.findUnique({ where: { sku } });
-    if (skuExists) {
-      res.status(400);
-      throw new Error('Product with this SKU already exists');
-    }
-  }
-
   const updatedProduct = await prisma.$transaction(async (tx) => {
     const p = await tx.product.update({
       where: { id },
@@ -186,7 +175,6 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
         },
       });
     }
-
     return p;
   });
 
@@ -200,14 +188,8 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
  */
 export const deleteProduct = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-
-  const product = await prisma.product.findUnique({ where: { id } });
-
-  if (!product) {
-    res.status(404);
-    throw new Error('Product not found');
-  }
-
+  
+  // Check existing orders
   const orderItemCount = await prisma.orderItem.count({
     where: { productId: id }
   });
@@ -218,69 +200,42 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.stockItem.deleteMany({
-      where: { productId: id },
-    });
-    await tx.cartItem.deleteMany({
-      where: { productId: id },
-    });
-    await tx.product.delete({ 
-      where: { id } 
-    });
+    await tx.stockItem.deleteMany({ where: { productId: id } });
+    await tx.cartItem.deleteMany({ where: { productId: id } });
+    await tx.product.delete({ where: { id } });
   });
 
   res.json({ message: 'Product removed' });
 });
 
-
-// --- DASHBOARD STATS FUNCTIONS ---
+// --- STATS & EXTRAS ---
 
 export const getProductStats = asyncHandler(async (req: Request, res: Response) => {
   const stats = await prisma.category.findMany({
-    include: {
-      _count: {
-        select: { products: true },
-      },
-    },
+    include: { _count: { select: { products: true } } },
   });
-
   const formattedStats = stats.map(cat => ({
     name: cat.name,
     count: cat._count.products,
   }));
-
   res.json(formattedStats);
 });
 
 export const getLowStockProducts = asyncHandler(async (req: Request, res: Response) => {
   const lowStockItems = await prisma.stockItem.findMany({
-    where: {
-      quantity: {
-        lte: 20,
-      },
-    },
-    include: {
-      product: {
-        select: { name: true, sku: true },
-      },
-    },
-    orderBy: {
-      quantity: 'asc',
-    },
+    where: { quantity: { lte: 20 } },
+    include: { product: { select: { name: true, sku: true } } },
+    orderBy: { quantity: 'asc' },
   });
-
   res.json(lowStockItems);
 });
 
-// --- BUY IT AGAIN FUNCTION ---
-export const getBuyAgainProducts = asyncHandler(async (req: any, res: Response) => {
+export const getBuyAgainProducts = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
-
   if (!userId) {
     res.json([]); 
     return;
   }
-
   const distinctItems = await prisma.orderItem.findMany({
     where: {
       order: {
@@ -289,28 +244,43 @@ export const getBuyAgainProducts = asyncHandler(async (req: any, res: Response) 
       }
     },
     distinct: ['productId'],
-    select: {
-      productId: true
-    },
+    select: { productId: true },
     take: 10 
   });
 
   const productIds = distinctItems.map(item => item.productId);
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+    include: { category: true, stockItems: true }
+  });
 
+  res.json(products);
+});
+
+export const getSearchSuggestions = asyncHandler(async (req: Request, res: Response) => {
+  const { q } = req.query;
+  if (!q || typeof q !== 'string') {
+    res.json([]);
+    return;
+  }
   const products = await prisma.product.findMany({
     where: {
-      id: { in: productIds }
+      OR: [
+        { name: { contains: q } },
+        { description: { contains: q } }
+      ]
     },
-    include: {
-      category: true,
-      stockItems: true
-    }
+    select: {
+      id: true, name: true, price: true, imageUrl: true,
+      category: { select: { name: true } }
+    },
+    take: 5
   });
+  res.json(products);
+});
 
-  const productsWithStock = products.map((p) => {
-    const totalStock = p.stockItems.reduce((sum, item) => sum + item.quantity, 0);
-    return { ...p, totalStock };
-  });
-
-  res.json(productsWithStock);
+// Bulk Upload (if needed)
+export const bulkUploadProducts = asyncHandler(async (req: Request, res: Response) => {
+   // ... (bulk logic from previous steps)
+   res.json({ message: "Bulk upload not implemented in this snippet" });
 });

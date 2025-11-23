@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
 import styles from './Inventory.module.scss';
 import { DataGrid, type ColumnDef } from '../../components/common/DataGrid';
-import { useToast } from '../../contexts/ToastContext'; // 1. Import Toast
-import DeleteModal from '../../components/common/DeleteModal'; // 2. Import Modal
+import { useToast } from '../../contexts/ToastContext';
+import DeleteModal from '../../components/common/DeleteModal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faFileCsv, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-// ... (Interfaces remain the same) ...
+// Interfaces
 interface ProductRow {
   id: string;
   sku: string;
@@ -27,40 +29,86 @@ interface Product {
 
 const AdminInventory = () => {
   const [products, setProducts] = useState<ProductRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // --- 1. Loading State ---
+  const [loading, setLoading] = useState(true); 
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  
-  const { showToast } = useToast(); // 3. Init Toast
+  const { showToast } = useToast();
 
-  // 4. Modal State
+  // --- CSV Upload State ---
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // --- Modal State ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
-  // 5. Handle "Delete" Click (Opens Modal)
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data } = await apiClient.get<Product[]>('/products');
+      const formattedData = data.map(p => ({
+        id: p.id,
+        sku: p.sku,
+        name: p.name,
+        category: p.category?.name || 'Uncategorized',
+        price: `₹${p.price.toFixed(2)}`,
+        stock: p.totalStock,
+      }));
+      setProducts(formattedData);
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('csv', file);
+
+    try {
+      const { data } = await apiClient.post('/products/bulk', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      showToast(data.message, 'success');
+      fetchProducts(); 
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to upload CSV', 'error');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = ''; 
+    }
+  };
+
   const onDeleteClick = (productId: string) => {
     setProductToDelete(productId);
     setIsModalOpen(true);
   };
 
-  // 6. Confirm Delete (Actual API Call)
   const handleConfirmDelete = async () => {
     if (!productToDelete) return;
 
     try {
       await apiClient.delete(`/products/${productToDelete}`);
-      
-      // Update UI
       setProducts((prev) => prev.filter((p) => p.id !== productToDelete));
-      
-      // Show Success Toast
       showToast('Product deleted successfully!', 'success');
-      
     } catch (err) {
       console.error(err);
       showToast('Failed to delete product', 'error');
     } finally {
-      // Close Modal
       setIsModalOpen(false);
       setProductToDelete(null);
     }
@@ -82,7 +130,6 @@ const AdminInventory = () => {
           >
             Edit
           </button>
-          {/* Pass ID to onDeleteClick instead of direct delete */}
           <button
             onClick={() => onDeleteClick(row.id)} 
             className={styles.deleteButton}
@@ -94,61 +141,51 @@ const AdminInventory = () => {
     },
   ];
 
-  const addProductButton = (
-    <Link to="/admin/inventory/new" className={styles.addButtonEmpty}>
-      + Add Your First Product
-    </Link>
-  );
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const { data } = await apiClient.get<Product[]>('/products');
-        const formattedData = data.map(p => ({
-          id: p.id,
-          sku: p.sku,
-          name: p.name,
-          category: p.category.name,
-          price: `₹${p.price.toFixed(2)}`,
-          stock: p.totalStock,
-        }));
-        setProducts(formattedData);
-        setError('');
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch products');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  if (loading) return <div>Loading inventory...</div>;
+  // --- 2. FIX: Use the 'loading' state here ---
+  if (loading) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>Loading inventory...</div>;
+  }
+  // --- END FIX ---
 
   return (
-    <div>
-      <div className={styles.pageHeader}>
-        <h2>Manage Inventory</h2>
-        {products.length > 0 && (
-          <Link to="/admin/inventory/new" className={styles.addButton}>
-            + Add Product
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1>Manage Inventory</h1>
+        
+        <div className={styles.actions}>
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef} 
+            style={{ display: 'none' }} 
+            onChange={handleFileUpload}
+          />
+          <button 
+            className={styles.importButton} 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            <FontAwesomeIcon icon={uploading ? faSpinner : faFileCsv} spin={uploading} />
+            {uploading ? ' Uploading...' : ' Import CSV'}
+          </button>
+
+          <Link to="/admin/inventory/new" className={styles.createButton}>
+            <FontAwesomeIcon icon={faPlus} /> Add Product
           </Link>
-        )}
+        </div>
       </div>
 
       {error && <div style={{ color: 'red', marginBottom: '15px' }}>Error: {error}</div>}
 
-      <DataGrid
-        columns={columns}
-        data={products}
-        emptyTitle="No Products Found"
-        emptyMessage="Get started by adding your first product to the inventory."
-        emptyAction={addProductButton}
-      />
+      <div className={styles.tableWrapper}>
+        <DataGrid
+          columns={columns}
+          data={products}
+          emptyTitle="No Products Found"
+          emptyMessage="Get started by adding your first product to the inventory."
+        />
+      </div>
 
-      {/* 7. Render the Modal */}
       <DeleteModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
