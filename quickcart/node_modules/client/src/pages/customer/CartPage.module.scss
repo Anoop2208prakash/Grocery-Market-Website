@@ -220,3 +220,30 @@
   margin-bottom: 0;
   border: 1px solid #16a34a;
 }
+
+.subSelector {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  small {
+    color: #888;
+    font-size: 0.8rem;
+  }
+}
+
+.subDropdown {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #333;
+  background-color: #fdfdfd;
+  cursor: pointer;
+  outline: none;
+
+  &:focus {
+    border-color: #31694E;
+  }
+}

@@ -8,7 +8,7 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const DELIVERY_FEE = 40; 
 
 const CartPage = () => {
-  const { cartItems, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, updateSubstitution } = useCart(); // Get updateSubstitution
 
   // 1. Calculate Subtotal
   const subtotal = cartItems.reduce(
@@ -84,7 +84,22 @@ const CartPage = () => {
             <div className={styles.itemDetails}>
               <h4>{item.name}</h4>
               <p>₹{item.price.toFixed(2)}</p>
+              
+              {/* --- NEW: Substitution Preference --- */}
+              <div className={styles.subSelector}>
+                <small>If unavailable:</small>
+                <select 
+                  value={item.substitution || 'REFUND'} 
+                  onChange={(e) => updateSubstitution(item.id, e.target.value as 'REFUND' | 'REPLACE')}
+                  className={styles.subDropdown}
+                >
+                  <option value="REFUND">Refund Money</option>
+                  <option value="REPLACE">Find Replacement</option>
+                </select>
+              </div>
+              {/* --- END NEW --- */}
             </div>
+
             <div className={styles.quantityControl}>
               <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
               <span>{item.quantity}</span>
@@ -116,7 +131,7 @@ const CartPage = () => {
           Total: ₹{total.toFixed(2)}
         </h2>
 
-        {/* --- THIS IS THE LINK TO CHECKOUT --- */}
+        {/* Link to Checkout */}
         <Link to="/checkout" className={styles.checkoutButton}>
           Proceed to Checkout
         </Link>

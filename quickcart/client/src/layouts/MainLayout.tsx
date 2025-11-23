@@ -198,8 +198,6 @@ const MainLayout = () => {
       {/* --- MODALS --- */}
       <LocationModal isOpen={isModalOpen} onClose={closeModal} />
       <FilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} />
-      
-      {/* Product Modal */}
       <ProductDetailModal />
       
     </div>

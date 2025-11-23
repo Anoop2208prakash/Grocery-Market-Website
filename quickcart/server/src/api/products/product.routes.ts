@@ -5,31 +5,41 @@ import {
   updateProduct,
   deleteProduct,
   getProductById,
-  getProductStats,
-  getLowStockProducts,
-  getBuyAgainProducts, // <-- 1. Import this
+  getProductStats, // Ensure this is exported in controller
+  getLowStockProducts, // Ensure this is exported in controller
+  getBuyAgainProducts,
+  getSearchSuggestions,
+  bulkUploadProducts, 
 } from './product.controller';
 import { protect, admin } from '../auth/auth.middleware';
+import multer from 'multer'; // Import multer for file upload
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' }); 
 
 // --- Dashboard Stats Routes ---
 router.route('/stats/category').get(protect, admin, getProductStats);
 router.route('/stats/lowstock').get(protect, admin, getLowStockProducts);
 
-// --- 2. Add "Buy It Again" Route (Must be BEFORE /:id) ---
+// --- "Buy It Again" Route ---
 router.route('/buy-again').get(protect, getBuyAgainProducts);
 
-// GET /api/products - Get all products (Public for customers)
-// POST /api/products - Create new product (Protected for admins)
+// --- Search Suggestions Route ---
+router.route('/suggestions').get(getSearchSuggestions);
+
+// --- Bulk Upload Route ---
+router.route('/bulk').post(protect, admin, upload.single('csv'), bulkUploadProducts);
+
+// GET /api/products - Get all products (Public)
+// POST /api/products - Create new product (Admin)
 router
   .route('/')
   .get(getProducts)
   .post(protect, admin, createProduct);
 
-// GET /api/products/:id - Get single product (Protected for admins)
-// PUT /api/products/:id - Update a product (Protected for admins)
-// DELETE /api/products/:id - Delete a product (Protected for admins)
+// GET /api/products/:id - Get single product (Admin)
+// PUT /api/products/:id - Update a product (Admin)
+// DELETE /api/products/:id - Delete a product (Admin)
 router
   .route('/:id')
   .get(protect, admin, getProductById)

@@ -141,6 +141,10 @@ model CartItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
 
+  // --- ADDED SUBSTITUTION POLICY ---
+  substitution SubstitutionPolicy @default(REFUND)
+  // --------------------------------
+
   @@unique([cartId, productId])
 }
 
@@ -182,6 +186,10 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   price     Float   // Price at the time of purchase
+  
+  // --- ADDED SUBSTITUTION POLICY ---
+  substitution SubstitutionPolicy @default(REFUND)
+  // --------------------------------
 }
 
 enum OrderStatus {
@@ -191,6 +199,12 @@ enum OrderStatus {
   OUT_FOR_DELIVERY
   DELIVERED
   CANCELLED
+}
+
+// --- ADDED SUBSTITUTION ENUM ---
+enum SubstitutionPolicy {
+  REFUND
+  REPLACE
 }
 
 // ------------------------------------
@@ -212,7 +226,7 @@ model Delivery {
 }
 
 // ------------------------------------
-// BANNER MODEL (NEW)
+// BANNER MODEL
 // ------------------------------------
 model Banner {
   id        String   @id @default(cuid())
