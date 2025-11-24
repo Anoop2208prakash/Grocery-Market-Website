@@ -213,7 +213,6 @@ export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response)
   res.json(order);
 });
 
-// ... (Keep the rest of the file below this line: updateOrderStatus, getMyOrders, stats, cancelOrder) ...
 export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -249,16 +248,20 @@ export const getMyOrders = asyncHandler(async (req: AuthRequest, res: Response) 
   res.json(orders);
 });
 
+/**
+ * @desc    Get order statistics for charts (REVENUE)
+ * @route   GET /api/orders/stats
+ * @access  Private/Admin
+ */
 export const getOrderStats = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { period } = req.query;
   let query;
-  // FIX: Removed `as date` alias from DATE_FORMAT to avoid ONLY_FULL_GROUP_BY error
-  const baseQuery = "SELECT SUM(`totalPrice`) as total, DATE_FORMAT(`createdAt`, '%Y-%m-%d') as order_date FROM `order` WHERE `status` = 'DELIVERED'";
   
+  // Use 'order_date' alias to group correctly in MySQL strict mode
   switch (period) {
     case 'daily':
       query = `
-        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-%d') as order_date
+        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-%d') as order_date 
         FROM \`order\` 
         WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 7 DAY
         GROUP BY order_date
@@ -302,9 +305,16 @@ export const getOrderStats = asyncHandler(async (req: AuthRequest, res: Response
   res.json(stringifiedResults);
 });
 
+/**
+ * @desc    Get order COUNT statistics for charts (ORDERS)
+ * @route   GET /api/orders/stats/count
+ * @access  Private/Admin
+ */
 export const getOrderCountStats = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { period } = req.query;
   let query;
+  
+  // Use 'order_date' alias to group correctly in MySQL strict mode
   switch (period) {
     case 'daily':
       query = `
@@ -341,6 +351,7 @@ export const getOrderCountStats = asyncHandler(async (req: AuthRequest, res: Res
       `;
       break;
   }
+
   const results = await prisma.$queryRawUnsafe(query);
   const stringifiedResults = (results as any[]).map(item => ({
     ...item,
