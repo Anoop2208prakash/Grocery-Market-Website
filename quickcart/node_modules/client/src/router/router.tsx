@@ -39,6 +39,7 @@ import AdminStores from '../pages/admin/AdminStores';   // <-- Dark Store Manage
 // Driver & Packer Pages
 import DriverDashboard from '../pages/driver/DriverDashboard';
 import PackerDashboard from '../pages/admin/PackerDashboard'; // <-- Packer Portal
+import AdminCoupons from '../pages/admin/AdminCoupons';
 
 const router = createBrowserRouter([
   {
@@ -92,7 +93,8 @@ const router = createBrowserRouter([
 
               // Content & Settings
               { path: 'banners', element: <AdminBanners /> },
-              { path: 'stores', element: <AdminStores /> }, // <-- New Store Route
+              { path: 'stores', element: <AdminStores /> },
+              { path: 'coupons', element: <AdminCoupons /> } // <-- New Store Route
             ],
           },
         ]

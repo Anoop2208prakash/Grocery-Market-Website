@@ -41,6 +41,9 @@ const AdminLayout = () => {
             <li>
               <Link to="/admin/stores">Stores</Link>
             </li>
+            <li>
+              <Link to="/admin/coupons">Coupons</Link>
+            </li>
           </ul>
         </nav>
 

@@ -15,6 +15,7 @@ import bannerRoutes from './api/banners/banner.routes';
 import darkStoreRoutes from './api/darkStore/darkStore.routes';
 import slotRoutes from './api/delivery/deliverySlot.routes';
 import packerRoutes from './api/packer/packer.routes';
+import couponRoutes from './api/coupons/coupon.routes';
 
 const app = express();
 
@@ -48,5 +49,6 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/darkstores', darkStoreRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/packer', packerRoutes);
+app.use('/api/coupons', couponRoutes);
 
 export default app;

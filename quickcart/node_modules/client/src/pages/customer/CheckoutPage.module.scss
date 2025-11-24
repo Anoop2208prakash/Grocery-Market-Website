@@ -1,4 +1,4 @@
-/* ... existing styles ... */
+/* client/src/pages/customer/CheckoutPage.module.scss */
 
 .grid {
   display: grid;
@@ -6,6 +6,7 @@
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 20px;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -13,14 +14,12 @@
 }
 
 .leftColumn {
-  /* No background here, wrapper div style */
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* Address Selector container styling moved to component, or keep it generic */
-
+/* --- SECTIONS (Payment & Delivery) --- */
 .paymentSection {
   background: #fff;
   padding: 25px;
@@ -36,6 +35,7 @@
   }
 }
 
+/* --- PAYMENT OPTIONS --- */
 .paymentOption {
   display: flex;
   align-items: center;
@@ -72,7 +72,120 @@
   .errorText { color: #b91c1c; font-size: 0.85rem; font-weight: 600; }
 }
 
-/* Summary Styles */
+/* --- DELIVERY TABS (Express vs Scheduled) --- */
+.deliveryTabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  background: #fff;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f9f9f9;
+  }
+
+  &.active {
+    border-color: #31694E;
+    background: #31694E;
+    color: white;
+  }
+}
+
+/* Slot Grid for Scheduled Delivery */
+.slotGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.slotBtn {
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #31694E;
+  }
+
+  &.selected {
+    background: #e8f5e9;
+    border-color: #31694E;
+    color: #31694E;
+    font-weight: 700;
+  }
+}
+
+/* --- COUPON SECTION --- */
+.couponSection {
+  margin: 20px 0;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.couponInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9f9f9;
+  border: 1px dashed #ccc;
+  padding: 8px 12px;
+  border-radius: 6px;
+
+  .tagIcon { color: #31694E; }
+  
+  input {
+    border: none;
+    background: transparent;
+    flex-grow: 1;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    &:focus { outline: none; }
+  }
+  
+  .applyBtn {
+    background: #31694E;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    &:hover { background: #244f3a; }
+  }
+
+  .removeBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+}
+
+.successMsg {
+  color: #16a34a;
+  font-size: 0.85rem;
+  margin: 5px 0 0 0;
+  font-weight: 600;
+}
+
+/* --- SUMMARY SIDEBAR --- */
 .summary {
   padding: 25px;
   background: #F0E491; /* Cream background */
@@ -81,12 +194,14 @@
   height: fit-content;
   position: sticky;
   top: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 .total {
   font-size: 1.5rem;
   font-weight: 800;
   margin-bottom: 20px;
+  text-align: right;
 }
 
 .summaryItem {
@@ -96,6 +211,17 @@
   font-weight: 500;
   border-bottom: 1px dashed #BBC863;
   padding-bottom: 10px;
+}
+
+.itemList {
+  margin-bottom: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+  
+  /* Custom scrollbar for item list */
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #BBC863; border-radius: 2px; }
 }
 
 .confirmButton {
@@ -110,7 +236,8 @@
   cursor: pointer;
   margin-top: 20px;
   transition: background-color 0.2s;
+  box-shadow: 0 4px 10px rgba(49, 105, 78, 0.2);
 
   &:hover { background-color: #244f3a; }
-  &:disabled { background-color: #ccc; cursor: not-allowed; }
+  &:disabled { background-color: #9ca3af; cursor: not-allowed; box-shadow: none; }
 }
