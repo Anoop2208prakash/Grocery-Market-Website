@@ -38,6 +38,9 @@ const AdminLayout = () => {
             <li>
               <Link to="/">Home</Link>
             </li>
+            <li>
+              <Link to="/admin/stores">Stores</Link>
+            </li>
           </ul>
         </nav>
 

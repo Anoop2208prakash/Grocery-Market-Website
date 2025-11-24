@@ -36,6 +36,7 @@ import AdminOrderDetails from '../pages/admin/OrderDetails';
 import DriverDashboard from '../pages/driver/DriverDashboard';
 import WalletPage from '../pages/customer/WalletPage';
 import AdminBanners from '../pages/admin/AdminBanners';
+import AdminStores from '../pages/admin/AdminStores';
 
 const router = createBrowserRouter([
   {
@@ -82,6 +83,7 @@ const router = createBrowserRouter([
               { path: 'inventory/new', element: <ProductCreate /> },
               { path: 'inventory/edit/:id', element: <ProductEdit /> },
               { path: 'banners', element: <AdminBanners /> },
+              { path: 'stores', element: <AdminStores /> },
             ],
           },
         ]

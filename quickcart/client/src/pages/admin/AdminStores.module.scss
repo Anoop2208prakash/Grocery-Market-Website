@@ -1,0 +1,191 @@
+/* client/src/pages/admin/AdminStores.module.scss */
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.header {
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  h2 {
+    margin: 0;
+    color: #31694E; /* Dark Green */
+    font-size: 2rem;
+    font-weight: 800;
+  }
+
+  svg {
+    color: #BBC863; /* Olive Accent */
+    font-size: 1.8rem;
+  }
+}
+
+/* --- Add Store Form --- */
+.formCard {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+
+  h3 {
+    margin-top: 0;
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #f5f5f5;
+    padding-bottom: 10px;
+  }
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+  
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+  input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    
+    &:focus {
+      outline: none;
+      border-color: #31694E;
+      box-shadow: 0 0 0 3px rgba(49, 105, 78, 0.1);
+    }
+  }
+}
+
+.addButton {
+  background: #31694E;
+  color: white;
+  border: none;
+  padding: 14px 30px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+  width: 100%;
+
+  &:hover {
+    background: #244f3a;
+  }
+}
+
+/* --- Store List Grid --- */
+.storeList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.storeCard {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  }
+  
+  h4 {
+    margin: 0 0 5px 0;
+    color: #31694E;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  p {
+    margin: 0 0 15px 0;
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    
+    svg { color: #BBC863; margin-top: 3px; }
+  }
+}
+
+.coords {
+  font-family: monospace;
+  background: #f4f4f4;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 15px;
+  display: block;
+  width: fit-content;
+  border: 1px solid #eee;
+}
+
+.cardActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px dashed #eee;
+  padding-top: 15px;
+  margin-top: auto;
+}
+
+.orderCount {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #888;
+  
+  span { color: #333; }
+}
+
+.deleteBtn {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  &:hover {
+    background: #fecaca;
+  }
+}

@@ -1,10 +1,6 @@
 /* client/src/pages/admin/Inventory.module.scss */
 
-// .container {
-//   // max-width: 1100px;
-//   margin: 0 auto;
-//   // padding: 30px 20px;
-// }
+
 
 .header {
   display: flex;
@@ -15,18 +11,19 @@
   h1 {
     margin: 0;
     color: #31694E; /* Dark Green */
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 }
 
+/* --- Action Buttons (Top Right) --- */
 .actions {
   display: flex;
   gap: 15px;
-  align-items: center;
 }
-
-/* --- Button Styles --- */
 
 .importButton {
   background-color: white;
@@ -36,22 +33,19 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #e8f5e9; /* Light Green tint */
+    background-color: #e8f5e9;
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background-color: #f5f5f5;
-    border-color: #ddd;
-    color: #999;
   }
 }
 
@@ -62,7 +56,7 @@
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -70,53 +64,114 @@
   border: none;
 
   &:hover {
-    background-color: #244f3a; /* Darker Green */
+    background-color: #244f3a;
   }
 }
 
-/* --- Table Wrapper --- */
-.tableWrapper {
-  background: white;
-  border-radius: 12px;
-  padding: 5px;
-  border: 1px solid #eee;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: hidden;
-}
-
-/* --- Action Buttons inside Table --- */
-.actionButtons {
+/* --- Product List (The Cards) --- */
+/* Replaces the old table wrapper */
+.gridList {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.editButton,
-.deleteButton {
-  padding: 6px 12px;
+.productCard {
+  background: white;
+  padding: 20px 25px;
+  border-radius: 12px; /* Rounded corners like screenshot */
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    border-color: #BBC863; /* Olive highlight on hover */
+  }
+}
+
+.productInfo {
+  h4 {
+    margin: 0 0 5px 0;
+    color: #31694E;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .sku {
+    font-family: monospace;
+    color: #666;
+    font-size: 0.85rem;
+    background: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 10px;
+  }
+
+  .category {
+    color: #888;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
+.productMeta {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+
+  .stock {
+    font-size: 0.9rem;
+    color: #555;
+    
+    span { font-weight: 700; color: #31694E; }
+  }
+
+  .price {
+    font-weight: 700;
+    color: #333;
+    font-size: 1.1rem;
+  }
+}
+
+.cardActions {
+  display: flex;
+  gap: 10px;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid #eee;
+}
+
+.editBtn {
+  background: #F0E491;
+  color: #31694E;
+  border: none;
+  padding: 8px 14px;
   border-radius: 6px;
-  cursor: pointer;
   font-weight: 600;
   font-size: 0.85rem;
-  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  
+  &:hover { background: #BBC863; }
+}
+
+.deleteBtn {
+  background: #fee2e2;
+  color: #b91c1c;
   border: none;
-}
-
-.editButton {
-  background-color: #F0E491; /* Cream */
-  color: #31694E; /* Dark Green text */
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
   
-  &:hover {
-    background-color: #BBC863; /* Olive */
-  }
-}
-
-.deleteButton {
-  background-color: white;
-  border: 1px solid #ef4444;
-  color: #ef4444; /* Red */
-  
-  &:hover {
-    background-color: #ef4444;
-    color: white;
-  }
+  &:hover { background: #fecaca; }
 }
