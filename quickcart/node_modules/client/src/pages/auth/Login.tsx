@@ -31,6 +31,8 @@ const Login = () => {
         navigate('/admin');
       } else if (user.role === 'DRIVER') {
         navigate('/driver');
+      } else if (user.role === 'PACKER') {
+        navigate('/packer'); // <--- Redirect Packer to their dashboard
       } else {
         navigate('/');
       }

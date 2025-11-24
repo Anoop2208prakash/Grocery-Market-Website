@@ -13,6 +13,8 @@ import walletRoutes from './api/wallet/wallet.routes';
 import invoiceRoutes from './api/invoice/invoice.routes';
 import bannerRoutes from './api/banners/banner.routes';
 import darkStoreRoutes from './api/darkStore/darkStore.routes';
+import slotRoutes from './api/delivery/deliverySlot.routes';
+import packerRoutes from './api/packer/packer.routes';
 
 const app = express();
 
@@ -44,5 +46,7 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/invoice', invoiceRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/darkstores', darkStoreRoutes);
+app.use('/api/slots', slotRoutes);
+app.use('/api/packer', packerRoutes);
 
 export default app;

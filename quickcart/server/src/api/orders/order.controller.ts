@@ -191,10 +191,6 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
   }
 });
 
-// ... (Keep getOrderById, updateOrderStatus, getMyOrders, getOrderStats, getOrderCountStats, cancelOrder exactly as they were) ...
-// To save space, I am not repeating them, but DO NOT DELETE THEM.
-// Just paste the new getOrders and createOrder functions above the rest.
-
 /**
  * @desc    Get a single order by ID
  * @route   GET /api/orders/:id
@@ -202,30 +198,18 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
  */
 export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
       user: { select: { name: true, email: true } },
-      items: {
-        include: {
-          product: { 
-            select: { 
-              name: true, 
-              sku: true,
-              imageUrl: true // <--- THIS WAS MISSING
-            } 
-          } 
-        },
-      },
+      items: { include: { product: { select: { name: true, sku: true, imageUrl: true } } } }, // Include image
+      darkStore: { select: { name: true } }, // Include store name
     },
   });
-
   if (!order) {
     res.status(404);
     throw new Error('Order not found');
   }
-
   res.json(order);
 });
 
@@ -268,21 +252,52 @@ export const getMyOrders = asyncHandler(async (req: AuthRequest, res: Response) 
 export const getOrderStats = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { period } = req.query;
   let query;
-  const baseQuery = "SELECT SUM(`totalPrice`) as total, DATE_FORMAT(`createdAt`, '%Y-%m-%d') as date FROM `order` WHERE `status` = 'DELIVERED'";
+  // FIX: Removed `as date` alias from DATE_FORMAT to avoid ONLY_FULL_GROUP_BY error
+  const baseQuery = "SELECT SUM(`totalPrice`) as total, DATE_FORMAT(`createdAt`, '%Y-%m-%d') as order_date FROM `order` WHERE `status` = 'DELIVERED'";
+  
   switch (period) {
     case 'daily':
-      query = `${baseQuery} AND \`createdAt\` >= CURDATE() - INTERVAL 7 DAY GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-%d') as order_date
+        FROM \`order\` 
+        WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 7 DAY
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
     case 'weekly':
-      query = `SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(DATE_SUB(\`createdAt\`, INTERVAL WEEKDAY(\`createdAt\`) DAY), '%Y-%m-%d') as date FROM \`order\` WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 12 WEEK GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(DATE_SUB(\`createdAt\`, INTERVAL WEEKDAY(\`createdAt\`) DAY), '%Y-%m-%d') as order_date
+        FROM \`order\` WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 12 WEEK
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
     case 'yearly':
-      query = `SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-01-01') as date FROM \`order\` WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 5 YEAR GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-01-01') as order_date
+        FROM \`order\` WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 5 YEAR
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
     case 'monthly':
     default:
-      query = `${baseQuery} AND \`createdAt\` >= CURDATE() - INTERVAL 12 MONTH GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT SUM(\`totalPrice\`) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-01') as order_date
+        FROM \`order\` 
+        WHERE \`status\` = 'DELIVERED' AND \`createdAt\` >= CURDATE() - INTERVAL 12 MONTH
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
   }
+
   const results = await prisma.$queryRawUnsafe(query);
   const stringifiedResults = (results as any[]).map(item => ({
-    ...item, total: item.total ? item.total.toString() : '0', date: item.date ? item.date.toString() : 'N/A'
+    ...item,
+    total: item.total ? item.total.toString() : '0',
+    date: item.order_date ? item.order_date.toString() : 'N/A' // Map back to 'date' for frontend
   }));
   res.json(stringifiedResults);
 });
@@ -292,18 +307,45 @@ export const getOrderCountStats = asyncHandler(async (req: AuthRequest, res: Res
   let query;
   switch (period) {
     case 'daily':
-      query = `SELECT COUNT(id) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-%d') as date FROM \`order\` WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 7 DAY GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT COUNT(id) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-%d') as order_date 
+        FROM \`order\` 
+        WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 7 DAY
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
     case 'weekly':
-      query = `SELECT COUNT(id) as total, DATE_FORMAT(DATE_SUB(\`createdAt\`, INTERVAL WEEKDAY(\`createdAt\`) DAY), '%Y-%m-%d') as date FROM \`order\` WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 12 WEEK GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT COUNT(id) as total, DATE_FORMAT(DATE_SUB(\`createdAt\`, INTERVAL WEEKDAY(\`createdAt\`) DAY), '%Y-%m-%d') as order_date
+        FROM \`order\` WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 12 WEEK
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
     case 'yearly':
-      query = `SELECT COUNT(id) as total, DATE_FORMAT(\`createdAt\`, '%Y-01-01') as date FROM \`order\` WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 5 YEAR GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT COUNT(id) as total, DATE_FORMAT(\`createdAt\`, '%Y-01-01') as order_date
+        FROM \`order\` WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 5 YEAR
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
     case 'monthly':
     default:
-      query = `SELECT COUNT(id) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-01') as date FROM \`order\` WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 12 MONTH GROUP BY date ORDER BY date ASC;`; break;
+      query = `
+        SELECT COUNT(id) as total, DATE_FORMAT(\`createdAt\`, '%Y-%m-01') as order_date
+        FROM \`order\` WHERE 1=1 AND \`createdAt\` >= CURDATE() - INTERVAL 12 MONTH
+        GROUP BY order_date
+        ORDER BY order_date ASC;
+      `;
+      break;
   }
   const results = await prisma.$queryRawUnsafe(query);
   const stringifiedResults = (results as any[]).map(item => ({
-    ...item, total: item.total ? item.total.toString() : '0', date: item.date ? item.date.toString() : 'N/A'
+    ...item,
+    total: item.total ? item.total.toString() : '0',
+    date: item.order_date ? item.order_date.toString() : 'N/A'
   }));
   res.json(stringifiedResults);
 });

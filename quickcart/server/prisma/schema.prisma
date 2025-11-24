@@ -41,6 +41,7 @@ enum UserRole {
   DRIVER
   ADMIN
   SUPER_ADMIN
+  PACKER // <-- 1. ADDED PACKER ROLE
 }
 
 model Address {
@@ -141,9 +142,9 @@ model CartItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
 
-  // --- ADDED SUBSTITUTION POLICY ---
+  // --- SUBSTITUTION POLICY ---
   substitution SubstitutionPolicy @default(REFUND)
-  // --------------------------------
+  // ---------------------------
 
   @@unique([cartId, productId])
 }
@@ -164,6 +165,12 @@ model Order {
   addressId     String?
   address       Address?    @relation(fields: [addressId], references: [id], onDelete: SetNull)
 
+  // --- DELIVERY SLOTS ---
+  deliveryType   DeliveryType  @default(EXPRESS)
+  deliverySlotId String?
+  deliverySlot   DeliverySlot? @relation(fields: [deliverySlotId], references: [id])
+  // ----------------------------
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   
@@ -171,11 +178,25 @@ model Order {
   delivery      Delivery?
 }
 
-// --- PAYMENT ENUM ---
 enum PaymentMethod {
   WALLET
   UPI
   COD
+}
+
+enum DeliveryType {
+  EXPRESS
+  STANDARD
+}
+
+model DeliverySlot {
+  id        String   @id @default(cuid())
+  startTime DateTime // e.g., 10:00 AM
+  endTime   DateTime // e.g., 11:00 AM
+  capacity  Int      @default(5) // Max 5 orders per slot
+  orders    Order[]
+  
+  @@index([startTime])
 }
 
 model OrderItem {
@@ -187,21 +208,21 @@ model OrderItem {
   quantity  Int
   price     Float   // Price at the time of purchase
   
-  // --- ADDED SUBSTITUTION POLICY ---
+  // --- SUBSTITUTION POLICY ---
   substitution SubstitutionPolicy @default(REFUND)
-  // --------------------------------
+  // ---------------------------
 }
 
 enum OrderStatus {
   PENDING
   CONFIRMED
   PACKING
+  READY_FOR_PICKUP // <-- 2. ADDED THIS STATUS
   OUT_FOR_DELIVERY
   DELIVERED
   CANCELLED
 }
 
-// --- ADDED SUBSTITUTION ENUM ---
 enum SubstitutionPolicy {
   REFUND
   REPLACE

@@ -61,3 +61,13 @@ export const admin = (req: AuthRequest, res: Response, next: NextFunction) => {
     throw new Error('Not authorized as an admin');
   }
 };
+
+// --- NEW: Packer Middleware ---
+export const packer = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.user && (req.user.role === 'PACKER' || req.user.role === 'ADMIN')) {
+    next();
+  } else {
+    res.status(401);
+    throw new Error('Not authorized as a packer');
+  }
+};

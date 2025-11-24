@@ -9,6 +9,7 @@ import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
 
 // --- Import Page components ---
+
 // Customer Pages
 import Home from '../pages/customer/Home';
 import CartPage from '../pages/customer/CartPage';
@@ -18,7 +19,8 @@ import ProfilePage from '../pages/customer/ProfilePage';
 import UpdatePassword from '../pages/customer/UpdatePassword';
 import SearchPage from '../pages/customer/SearchPage';
 import CategoryPage from '../pages/customer/CategoryPage';
-import CheckoutPage from '../pages/customer/CheckoutPage'; // <-- 1. IMPORT THIS
+import WalletPage from '../pages/customer/WalletPage';     // <-- Wallet Feature
+import CheckoutPage from '../pages/customer/CheckoutPage'; // <-- Checkout Feature
 
 // Auth Pages
 import Login from '../pages/auth/Login';
@@ -31,12 +33,12 @@ import ProductCreate from '../pages/admin/ProductCreate';
 import ProductEdit from '../pages/admin/ProductEdit';
 import AdminOrders from '../pages/admin/Orders';
 import AdminOrderDetails from '../pages/admin/OrderDetails';
+import AdminBanners from '../pages/admin/AdminBanners'; // <-- Banner Manager
+import AdminStores from '../pages/admin/AdminStores';   // <-- Dark Store Manager
 
-// Driver Page
+// Driver & Packer Pages
 import DriverDashboard from '../pages/driver/DriverDashboard';
-import WalletPage from '../pages/customer/WalletPage';
-import AdminBanners from '../pages/admin/AdminBanners';
-import AdminStores from '../pages/admin/AdminStores';
+import PackerDashboard from '../pages/admin/PackerDashboard'; // <-- Packer Portal
 
 const router = createBrowserRouter([
   {
@@ -45,14 +47,14 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'cart', element: <CartPage /> },
-      { path: 'checkout', element: <CheckoutPage /> }, // <-- 2. ADD THIS ROUTE
       { path: 'order-success/:id', element: <OrderSuccess /> },
       { path: 'my-orders', element: <MyOrders /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'profile/update-password', element: <UpdatePassword /> },
       { path: 'wallet', element: <WalletPage /> },
       { path: 'search', element: <SearchPage /> },
-      { path: 'category/:name', element: <CategoryPage /> }, // Corrected to :name
+      { path: 'category/:id', element: <CategoryPage /> },
+      { path: 'checkout', element: <CheckoutPage /> },
     ],
   },
   {
@@ -63,27 +65,34 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <ProtectedRoute />, // <-- Guards all children (Driver + Admin)
+    element: <ProtectedRoute />, // <-- Guards all private routes
     children: [
-      { 
-        path: '/driver', 
-        element: <DriverDashboard /> 
-      },
+      // Role-Specific Dashboards
+      { path: '/driver', element: <DriverDashboard /> },
+      { path: '/packer', element: <PackerDashboard /> },
+
+      // Admin Routes
       {
-        element: <AdminRoute />, // <-- Guards only Admin routes
+        element: <AdminRoute />,
         children: [
           {
             path: '/admin',
             element: <AdminLayout />,
             children: [
               { index: true, element: <Dashboard /> },
+              
+              // Order Management
               { path: 'orders', element: <AdminOrders /> },
               { path: 'orders/:id', element: <AdminOrderDetails /> },
+              
+              // Inventory Management
               { path: 'inventory', element: <AdminInventory /> },
               { path: 'inventory/new', element: <ProductCreate /> },
               { path: 'inventory/edit/:id', element: <ProductEdit /> },
+
+              // Content & Settings
               { path: 'banners', element: <AdminBanners /> },
-              { path: 'stores', element: <AdminStores /> },
+              { path: 'stores', element: <AdminStores /> }, // <-- New Store Route
             ],
           },
         ]
