@@ -99,6 +99,7 @@ The `yarn seed` command creates these default accounts for you:
 | :--- | :--- | :--- | :--- |
 | **Admin** | `admin@quickcart.com` | `admin123` | Full access to Dashboard, Inventory, Orders |
 | **Driver** | `driver@quickcart.com` | `admin123` | Access to Driver Portal |
+| **Packer** | `packer@quickcart.com` | `admin123` | Access to Packer Portal |
 | **Customer** | *(Register New)* | *(Any)* | Browse, Cart, Checkout |
 
 -----
