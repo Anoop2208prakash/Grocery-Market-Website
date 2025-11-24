@@ -21,7 +21,8 @@
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^7.9.5",
     "recharts": "^3.4.1",
-    "sass": "^1.94.0"
+    "sass": "^1.94.0",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

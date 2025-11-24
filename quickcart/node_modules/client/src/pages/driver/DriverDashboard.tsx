@@ -13,6 +13,8 @@ import {
   faBox, 
   faTruck
 } from '@fortawesome/free-solid-svg-icons';
+import { useSocket } from '../../contexts/SocketContext'; // 1. Import Socket Hook
+import { useToast } from '../../contexts/ToastContext';   // 2. Import Toast Hook
 
 // --- Interfaces ---
 interface Address {
@@ -40,8 +42,11 @@ interface DriverStats {
 }
 
 const DriverDashboard = () => {
-  const { logout, user } = useAuth();
+  const { logout, user } = useAuth(); 
   const navigate = useNavigate();
+  
+  const { socket } = useSocket(); // 3. Get Socket
+  const { showToast } = useToast(); // 4. Get Toast
 
   // --- State ---
   const [activeTab, setActiveTab] = useState<'jobs' | 'active' | 'earnings'>('jobs');
@@ -67,11 +72,32 @@ const DriverDashboard = () => {
     }
   };
 
+  // --- 5. Initial Fetch + Socket Listeners ---
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // Poll every 10s
-    return () => clearInterval(interval);
-  }, []);
+
+    if (socket) {
+      // Listen for new orders
+      socket.on('new_order', (data) => {
+        if (isOnline) { // Only notify if driver is online
+            showToast(`New Order Available: ₹${data.totalPrice}!`, 'success');
+            fetchData(); // Refresh list instantly
+        }
+      });
+
+      // Listen for cancellations
+      socket.on('order_cancelled', () => {
+        fetchData(); 
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('new_order');
+        socket.off('order_cancelled');
+      }
+    };
+  }, [socket, isOnline]); // Re-run if socket connects or online status changes
 
   // --- Handlers ---
   const handleAccept = async (orderId: string) => {
@@ -99,11 +125,11 @@ const DriverDashboard = () => {
   return (
     <div className={styles.dashboardContainer}>
       
-      {/* --- 1. Modern Header --- */}
+      {/* --- Header --- */}
       <div className={styles.header}>
-        <div>
+        <div style={{ flex: 1 }}>
           <h1><FontAwesomeIcon icon={faTruck} /> Driver Portal</h1>
-          <small>Hello, {user?.name}</small>
+          <small>Hello, {user?.name || 'Driver'}</small>
         </div>
         <button 
           className={styles.logoutButton} 
@@ -113,19 +139,20 @@ const DriverDashboard = () => {
         </button>
       </div>
 
-      {/* --- 2. Floating Status Bar --- */}
+      {/* --- Floating Status Bar --- */}
       <div className={styles.statusBar}>
         <span className={styles.statusLabel}>Availability Status</span>
         <div 
           className={`${styles.statusToggle} ${isOnline ? styles.online : styles.offline}`}
           onClick={() => setIsOnline(!isOnline)}
+          style={{ cursor: 'pointer' }}
         >
-          {isOnline ? 'GO OFFLINE' : 'GO ONLINE'}
+          {isOnline ? 'ONLINE' : 'OFFLINE'}
           <FontAwesomeIcon icon={isOnline ? faToggleOn : faToggleOff} size="2x" />
         </div>
       </div>
 
-      {/* --- 3. Tabs --- */}
+      {/* --- Tabs --- */}
       <div className={styles.tabs}>
         <button 
           className={`${styles.tab} ${activeTab === 'jobs' ? styles.active : ''}`}
@@ -147,7 +174,7 @@ const DriverDashboard = () => {
         </button>
       </div>
 
-      {/* --- 4. Content Area --- */}
+      {/* --- Content Area --- */}
       <div className={styles.contentArea}>
         
         {/* JOBS TAB */}

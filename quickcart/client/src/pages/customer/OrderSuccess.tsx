@@ -3,8 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
 import styles from './OrderSuccess.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faPhone, faFileInvoice } from '@fortawesome/free-solid-svg-icons'; // 1. Import Invoice Icon
+import { faCheckCircle, faPhone, faFileInvoice } from '@fortawesome/free-solid-svg-icons';
 import TrackingTimeline from '../../components/orders/TrackingTimeline';
+import { useSocket } from '../../contexts/SocketContext'; // 1. Import Socket Hook
 
 interface Order {
   id: string;
@@ -19,11 +20,14 @@ interface Order {
 
 const OrderSuccess = () => {
   const { id } = useParams();
+  const { socket } = useSocket(); // 2. Get socket instance
   const [order, setOrder] = useState<Order | null>(null);
   
+  // 3. Initial Fetch & Socket Listener
   useEffect(() => {
     if (!id) return;
 
+    // A. Fetch Order Data Immediately
     const fetchOrder = async () => {
       try {
         const { data } = await apiClient.get(`/orders/${id}`);
@@ -32,35 +36,39 @@ const OrderSuccess = () => {
         console.error("Failed to track order", error);
       }
     };
-
-    // 1. Initial Fetch
     fetchOrder();
 
-    // 2. Poll every 5 seconds for updates (Live Tracking!)
-    const interval = setInterval(fetchOrder, 5000);
-    
-    return () => clearInterval(interval);
-  }, [id]);
+    // B. Listen for Real-Time Updates via Socket
+    if (socket) {
+      // Join the specific order room
+      socket.emit('join_room', `order_${id}`);
 
-  // --- 3. NEW: Invoice Download Handler ---
+      // Update state instantly when status changes
+      socket.on('order_status_updated', (data: { status: string }) => {
+        setOrder((prev) => prev ? { ...prev, status: data.status } : null);
+      });
+
+      // Cleanup listeners on unmount
+      return () => {
+        socket.off('order_status_updated');
+      };
+    }
+  }, [id, socket]);
+
+  // --- Invoice Download Handler ---
   const handleDownloadInvoice = async () => {
     try {
-      // Request the PDF as a 'blob' (binary large object)
       const response = await apiClient.get(`/invoice/${id}`, { 
         responseType: 'blob' 
       });
       
-      // Create a temporary URL for the blob
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      
-      // Create a hidden link and click it to force download
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `invoice-${id?.slice(-6)}.pdf`);
       document.body.appendChild(link);
       link.click();
       
-      // Cleanup
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -68,7 +76,6 @@ const OrderSuccess = () => {
       alert("Could not download invoice. Please try again.");
     }
   };
-  // --- END NEW ---
 
   if (!order) return <div>Loading tracking info...</div>;
 
@@ -99,9 +106,8 @@ const OrderSuccess = () => {
         </div>
       )}
 
-      {/* --- 4. Action Buttons Container --- */}
+      {/* --- Action Buttons --- */}
       <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '30px' }}>
-        {/* Invoice Button */}
         <button 
           onClick={handleDownloadInvoice}
           className={styles.invoiceButton}

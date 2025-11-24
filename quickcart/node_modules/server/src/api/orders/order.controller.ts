@@ -3,24 +3,6 @@ import type { Request, Response } from 'express';
 import prisma from '../../lib/prisma';
 import type { AuthRequest } from '../auth/auth.middleware';
 
-// Helper: Calculate distance between two coordinates (Haversine Formula)
-function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; // Radius of the earth in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const d = R * c; // Distance in km
-  return d;
-}
-
-function deg2rad(deg: number) {
-  return deg * (Math.PI / 180);
-}
-
 /**
  * @desc    Fetch all orders
  * @route   GET /api/orders
@@ -29,11 +11,14 @@ function deg2rad(deg: number) {
 export const getOrders = asyncHandler(async (req: Request, res: Response) => {
   const orders = await prisma.order.findMany({
     include: {
-      user: { select: { name: true, email: true } },
-      items: {
-        include: { product: { select: { name: true } } },
+      user: {
+        select: { name: true, email: true },
       },
-      darkStore: { select: { name: true } }, // Include Store Name
+      items: {
+        include: {
+          product: { select: { name: true } },
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -42,11 +27,12 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
 });
 
 /**
- * @desc    Create a new order (with Smart Routing & Stock Check)
+ * @desc    Create a new order (with Stock & Payment Logic)
  * @route   POST /api/orders
  * @access  Private
  */
 export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
+  // 1. Clean destructuring with default value for paymentMethod
   const { cartItems, totalPrice, addressId, paymentMethod = 'COD' } = req.body;
   const userId = req.user?.id;
 
@@ -54,81 +40,53 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     res.status(401);
     throw new Error('User not found. Not authorized.');
   }
+
   if (!cartItems || cartItems.length === 0) {
     res.status(400);
     throw new Error('No items in cart');
   }
+  
   if (!addressId) {
     res.status(400);
     throw new Error('No delivery address provided');
   }
 
-  // --- 1. SMART ROUTING LOGIC ---
-  
-  // A. Get the User's Location
-  const address = await prisma.address.findUnique({ where: { id: addressId } });
-  if (!address) {
-    res.status(404);
-    throw new Error('Address not found');
-  }
-
-  let selectedStoreId = 'clxvw2k9w000008l41111aaaa'; // Default Fallback
-
-  // B. If address has coordinates, find the nearest store
-  if (address.lat && address.lng) {
-    const allStores = await prisma.darkStore.findMany();
-    
-    let minDistance = Infinity;
-    let nearestStore = null;
-
-    for (const store of allStores) {
-      const dist = getDistanceFromLatLonInKm(address.lat, address.lng, store.lat, store.lng);
-      if (dist < minDistance) {
-        minDistance = dist;
-        nearestStore = store;
-      }
-    }
-
-    if (nearestStore) {
-      selectedStoreId = nearestStore.id;
-      console.log(`Routing Order to Nearest Store: ${nearestStore.name} (${minDistance.toFixed(2)}km away)`);
-    }
-  } else {
-    console.log('Address has no coordinates, using default store.');
-  }
-  
-  // --- END ROUTING LOGIC ---
+  const darkStoreId = 'clxvw2k9w000008l41111aaaa'; // Hardcoded for now
 
   try {
     const newOrder = await prisma.$transaction(async (tx) => {
-      
-      // 2. CHECK STOCK (At the SELECTED store)
+      // 2. CHECK STOCK
       for (const item of cartItems) {
         const stockItem = await tx.stockItem.findUnique({
           where: {
             productId_darkStoreId: {
               productId: item.id,
-              darkStoreId: selectedStoreId, // Use dynamic store ID
+              darkStoreId: darkStoreId,
             },
           },
         });
 
         if (!stockItem || stockItem.quantity < item.quantity) {
-          // Better error message
-          throw new Error(`Product "${item.name}" is out of stock at your nearest store.`);
+          throw new Error(`Not enough stock for product ID: ${item.id}`);
         }
       }
 
-      // 3. HANDLE WALLET PAYMENT
+      // 3. HANDLE WALLET PAYMENT (If selected)
       if (paymentMethod === 'WALLET') {
         const user = await tx.user.findUnique({ where: { id: userId } });
+        
+        // Check balance
         if (!user || user.walletBalance < totalPrice) {
           throw new Error('Insufficient wallet balance. Please add money or choose COD.');
         }
+        
+        // Deduct balance
         await tx.user.update({
           where: { id: userId },
           data: { walletBalance: { decrement: totalPrice } }
         });
+
+        // Create Wallet Transaction record
         await tx.walletTransaction.create({
           data: {
             userId,
@@ -145,13 +103,13 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
           userId: userId,
           totalPrice: totalPrice,
           status: 'PENDING',
-          darkStoreId: selectedStoreId, // Save the assigned store
+          darkStoreId: darkStoreId,
           addressId: addressId,
           paymentMethod: paymentMethod,
         },
       });
 
-      // 5. CREATE Items & DEDUCT Stock
+      // 5. CREATE OrderItems and DEDUCT Stock
       for (const item of cartItems) {
         await tx.orderItem.create({
           data: {
@@ -159,16 +117,13 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
             productId: item.id,
             quantity: item.quantity,
             price: item.price,
-            substitution: item.substitution || 'REFUND',
           },
         });
-        
-        // Deduct from the correct store
         await tx.stockItem.update({
           where: {
             productId_darkStoreId: {
               productId: item.id,
-              darkStoreId: selectedStoreId,
+              darkStoreId: darkStoreId,
             },
           },
           data: {
@@ -198,53 +153,89 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
  */
 export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
       user: { select: { name: true, email: true } },
-      items: { include: { product: { select: { name: true, sku: true, imageUrl: true } } } }, // Include image
-      darkStore: { select: { name: true } }, // Include store name
+      items: {
+        include: {
+          product: { select: { name: true, sku: true } },
+        },
+      },
     },
   });
+
   if (!order) {
     res.status(404);
     throw new Error('Order not found');
   }
+
   res.json(order);
 });
 
+/**
+ * @desc    Update order status
+ * @route   PUT /api/orders/:id/status
+ * @access  Private/Admin
+ */
 export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
+
   if (!status) {
     res.status(400);
     throw new Error('No status provided');
   }
-  const order = await prisma.order.findUnique({ where: { id } });
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+  });
+
   if (!order) {
     res.status(404);
     throw new Error('Order not found');
   }
+
   const updatedOrder = await prisma.order.update({
     where: { id },
-    data: { status: status },
+    data: {
+      status: status,
+    },
   });
+
   res.json(updatedOrder);
 });
 
+/**
+ * @desc    Get logged in user's orders
+ * @route   GET /api/orders/myorders
+ * @access  Private
+ */
 export const getMyOrders = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user?.id;
+
   if (!userId) {
     res.status(401);
     throw new Error('User not found');
   }
+
   const orders = await prisma.order.findMany({
-    where: { userId: userId },
-    include: {
-      items: { include: { product: { select: { name: true, price: true, imageUrl: true } } } },
+    where: {
+      userId: userId,
     },
-    orderBy: { createdAt: 'desc' },
+    include: {
+      items: {
+        include: {
+          product: { select: { name: true, price: true, imageUrl: true } },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
+
   res.json(orders);
 });
 
@@ -257,7 +248,8 @@ export const getOrderStats = asyncHandler(async (req: AuthRequest, res: Response
   const { period } = req.query;
   let query;
   
-  // Use 'order_date' alias to group correctly in MySQL strict mode
+  const baseQuery = "SELECT SUM(`totalPrice`) as total, DATE_FORMAT(`createdAt`, '%Y-%m-%d') as order_date FROM `order` WHERE `status` = 'DELIVERED'";
+
   switch (period) {
     case 'daily':
       query = `
@@ -297,11 +289,13 @@ export const getOrderStats = asyncHandler(async (req: AuthRequest, res: Response
   }
 
   const results = await prisma.$queryRawUnsafe(query);
+  
   const stringifiedResults = (results as any[]).map(item => ({
     ...item,
     total: item.total ? item.total.toString() : '0',
-    date: item.order_date ? item.order_date.toString() : 'N/A' // Map back to 'date' for frontend
+    date: item.order_date ? item.order_date.toString() : 'N/A'
   }));
+
   res.json(stringifiedResults);
 });
 
@@ -314,7 +308,6 @@ export const getOrderCountStats = asyncHandler(async (req: AuthRequest, res: Res
   const { period } = req.query;
   let query;
   
-  // Use 'order_date' alias to group correctly in MySQL strict mode
   switch (period) {
     case 'daily':
       query = `
@@ -353,38 +346,93 @@ export const getOrderCountStats = asyncHandler(async (req: AuthRequest, res: Res
   }
 
   const results = await prisma.$queryRawUnsafe(query);
+  
   const stringifiedResults = (results as any[]).map(item => ({
     ...item,
     total: item.total ? item.total.toString() : '0',
     date: item.order_date ? item.order_date.toString() : 'N/A'
   }));
+
   res.json(stringifiedResults);
 });
 
+/**
+ * @desc    Cancel an order (User)
+ * @route   PUT /api/orders/:id/cancel
+ * @access  Private
+ */
 export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const userId = req.user?.id;
-  const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
-  if (!order) { res.status(404); throw new Error('Order not found'); }
-  if (order.userId !== userId && req.user?.role !== 'ADMIN') { res.status(403); throw new Error('Not authorized'); }
-  if (['OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'].includes(order.status)) { res.status(400); throw new Error(`Cannot cancel order that is ${order.status}`); }
 
+  // 1. Find the order
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: { items: true }
+  });
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  // 2. Security Check
+  if (order.userId !== userId && req.user?.role !== 'ADMIN') {
+    res.status(403);
+    throw new Error('Not authorized to cancel this order');
+  }
+
+  // 3. Validation
+  if (['OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'].includes(order.status)) {
+    res.status(400);
+    throw new Error(`Cannot cancel order that is ${order.status}`);
+  }
+
+  // 4. Transaction
   const updatedOrder = await prisma.$transaction(async (tx) => {
-    const cancelled = await tx.order.update({ where: { id }, data: { status: 'CANCELLED' } });
+    // A. Update Status
+    const cancelled = await tx.order.update({
+      where: { id },
+      data: { status: 'CANCELLED' }
+    });
+
+    // B. Restock Inventory
     const darkStoreId = order.darkStoreId;
     for (const item of order.items) {
       await tx.stockItem.update({
-        where: { productId_darkStoreId: { productId: item.productId, darkStoreId } },
-        data: { quantity: { increment: item.quantity } }
+        where: {
+          productId_darkStoreId: {
+            productId: item.productId,
+            darkStoreId: darkStoreId,
+          }
+        },
+        data: {
+          quantity: { increment: item.quantity } // Add stock back
+        }
       });
     }
+    
+    // C. Refund Wallet (for WALLET or UPI)
     if (order.paymentMethod === 'WALLET' || order.paymentMethod === 'UPI') {
-       await tx.user.update({ where: { id: order.userId }, data: { walletBalance: { increment: order.totalPrice } } });
+       await tx.user.update({
+         where: { id: order.userId },
+         data: { walletBalance: { increment: order.totalPrice } }
+       });
+       
        await tx.walletTransaction.create({
-         data: { userId: order.userId, amount: order.totalPrice, type: 'CREDIT', description: order.paymentMethod === 'UPI' ? `Refund for Order #${order.id.slice(-6)} (UPI Reversal)` : `Refund for Order #${order.id.slice(-6)}` }
+         data: {
+           userId: order.userId,
+           amount: order.totalPrice,
+           type: 'CREDIT',
+           description: order.paymentMethod === 'UPI' 
+             ? `Refund for Order #${order.id.slice(-6)} (UPI Reversal)`
+             : `Refund for Order #${order.id.slice(-6)}`
+         }
        });
     }
+
     return cancelled;
   });
+
   res.json(updatedOrder);
 });
