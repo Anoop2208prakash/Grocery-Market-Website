@@ -4,14 +4,16 @@ import prisma from '../../lib/prisma';
 import type { AuthRequest } from '../auth/auth.middleware';
 
 /**
- * @desc    Get available orders for delivery (Status = PACKING or CONFIRMED)
+ * @desc    Get available orders for delivery (Status = READY_FOR_PICKUP)
  * @route   GET /api/delivery/available
  * @access  Private/Driver
  */
 export const getAvailableOrders = asyncHandler(async (req: AuthRequest, res: Response) => {
   const orders = await prisma.order.findMany({
     where: {
-      status: { in: ['CONFIRMED', 'PACKING'] },
+      // --- FIX: Driver only sees READY orders ---
+      status: 'READY_FOR_PICKUP', 
+      // -----------------------------------------
       delivery: { is: null },
     },
     include: {
@@ -43,7 +45,7 @@ export const getMyDeliveries = asyncHandler(async (req: AuthRequest, res: Respon
     include: {
       order: {
         include: {
-          user: { select: { name: true, phone: true, addresses: true } },
+          user: { select: { name: true, phone: true } }, // removed 'addresses' typo if present in other versions, staying safe with user select
           address: true,
         },
       },

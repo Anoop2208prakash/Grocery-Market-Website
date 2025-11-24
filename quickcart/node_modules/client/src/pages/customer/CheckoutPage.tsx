@@ -59,7 +59,9 @@ const CheckoutPage = () => {
     } catch (err) {
       console.error(err);
       let message = 'Checkout failed';
-      if (err instanceof AxiosError) message = err.response?.data?.message || message;
+      if (err instanceof AxiosError && err.response?.data?.message) {
+        message = err.response.data.message;
+      }
       setError(message);
       showToast(message, 'error');
       setLoading(false);

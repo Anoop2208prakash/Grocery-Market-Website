@@ -89,3 +89,4 @@ const generateToken = (id: string) => {
   }
   return jwt.sign({ id }, secret, { expiresIn: '30d' });
 };
+

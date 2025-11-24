@@ -9,7 +9,6 @@ import LocationModal from '../components/layout/LocationModal';
 import FilterModal from '../components/search/FilterModal'; 
 import ProductDetailModal from '../components/products/ProductDetailModal';
 
-// --- IMPORT FONT AWESOME ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSearch,
@@ -25,7 +24,6 @@ import {
   faFilter
 } from '@fortawesome/free-solid-svg-icons';
 
-// --- Data for the Category Bar ---
 const categoryNavData = [
   { name: 'Vegetables', icon: <FontAwesomeIcon icon={faCarrot} size="lg" />, link: '/category/Vegetables' },
   { name: 'Fruits', icon: <FontAwesomeIcon icon={faAppleWhole} size="lg" />, link: '/category/Fruits' },
@@ -42,18 +40,11 @@ const MainLayout = () => {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const { 
-    locationName, 
-    isModalOpen, 
-    openModal, 
-    closeModal 
-  } = useLocation();
+  const { locationName, isModalOpen, openModal, closeModal } = useLocation();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // --- Filter Modal State ---
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleLogout = () => {
@@ -87,9 +78,7 @@ const MainLayout = () => {
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim().length === 0) {
-      return;
-    }
+    if (searchQuery.trim().length === 0) return;
     navigate(`/search?q=${searchQuery}`);
     setSearchQuery('');
   };
@@ -97,21 +86,14 @@ const MainLayout = () => {
   return (
     <div>
       <nav className={styles.navbar}>
-        
-        {/* Left Section */}
         <div className={styles.brandSection}>
           <Link to="/" className={styles.navBrand}>QuickCart</Link>
-          <div 
-            className={styles.deliveryInfo} 
-            onClick={openModal}
-            style={{ cursor: 'pointer' }}
-          >
+          <div className={styles.deliveryInfo} onClick={openModal} style={{ cursor: 'pointer' }}>
             <h4>Delivery in 10 minutes</h4>
             <span>{locationName} <FontAwesomeIcon icon={faChevronDown} size="xs" /></span>
           </div>
         </div>
 
-        {/* Middle Section (Search + Filter) */}
         <div className={styles.searchWrapper}>
           <form className={styles.searchContainer} onSubmit={handleSearchSubmit}>
             <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
@@ -123,31 +105,18 @@ const MainLayout = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
-          
-          {/* Filter Button */}
-          <button 
-            className={styles.filterButton} 
-            onClick={() => setIsFilterOpen(true)}
-            title="Filter products"
-            type="button"
-          >
+          <button className={styles.filterButton} onClick={() => setIsFilterOpen(true)} title="Filter products" type="button">
             <FontAwesomeIcon icon={faFilter} />
           </button>
         </div>
 
-        {/* Right Section */}
         <div className={styles.navLinks}>
           {user && (
             <>
-              {user.role === 'ADMIN' && (
-                 <Link to="/admin" className={styles.navLink}>Admin</Link>
-              )}
+              {user.role === 'ADMIN' && (<Link to="/admin" className={styles.navLink}>Admin</Link>)}
               
               <div className={styles.profileContainer} ref={dropdownRef}>
-                <div 
-                  className={styles.profileIcon}
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
+                <div className={styles.profileIcon} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                   {getInitials(user.name)}
                 </div>
 
@@ -155,13 +124,10 @@ const MainLayout = () => {
                   <div className={styles.dropdownMenu}>
                     <div className={styles.menuContent}>
                       <Link to="/my-orders" className={styles.dropdownItem} onClick={() => setIsDropdownOpen(false)}>My Orders</Link>
-                      
-                      {/* --- ADDED WALLET LINK --- */}
                       <Link to="/wallet" className={styles.dropdownItem} onClick={() => setIsDropdownOpen(false)}>My Wallet</Link>
-                      {/* --- END ADD --- */}
-
                       <Link to="/profile" className={styles.dropdownItem} onClick={() => setIsDropdownOpen(false)}>My Profile</Link>
                       <Link to="/profile/update-password" className={styles.dropdownItem} onClick={() => setIsDropdownOpen(false)}>Update Password</Link>
+                      {/* Fix: Use standard dropdownItem class unless you specifically want the button style */}
                       <button onClick={handleLogout} className={styles.dropdownItemBtn}>Logout</button>
                     </div>
                   </div>
@@ -169,23 +135,15 @@ const MainLayout = () => {
               </div>
             </>
           )}
-          {!user && (
-            <Link to="/auth/login" className={styles.navLink}>Login</Link>
-          )}
-          
-          <Link to="/cart" className={styles.cartLink}>
-            Cart <span className={styles.cartCount}>{itemCount}</span>
-          </Link>
+          {!user && (<Link to="/auth/login" className={styles.navLink}>Login</Link>)}
+          <Link to="/cart" className={styles.cartLink}>Cart <span className={styles.cartCount}>{itemCount}</span></Link>
         </div>
       </nav>
 
-      {/* Category Bar */}
       <nav className={styles.categoryBar}>
         {categoryNavData.map((item) => (
           <Link to={item.link} key={item.name} className={styles.categoryItem}>
-            <div className={styles.iconWrapper}>
-              {item.icon}
-            </div>
+            <div className={styles.iconWrapper}>{item.icon}</div>
             <span>{item.name}</span>
           </Link>
         ))}
@@ -195,11 +153,9 @@ const MainLayout = () => {
         <Outlet />
       </main>
 
-      {/* --- MODALS --- */}
       <LocationModal isOpen={isModalOpen} onClose={closeModal} />
       <FilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} />
       <ProductDetailModal />
-      
     </div>
   );
 };

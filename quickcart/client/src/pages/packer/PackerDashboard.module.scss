@@ -1,0 +1,239 @@
+/* client/src/pages/packer/PackerDashboard.module.scss */
+
+  .container {
+    // max-width: 1000px;
+    // margin: 0 auto;
+    // padding: 0 20px 0 20px;
+    background-color: #F9F6F1; /* Off-white background */
+    min-height: 100vh;
+  }
+
+/* --- Header --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  background: #31694E; /* Dark Green */
+  color: white; /* Force white text */
+  padding: 20px 30px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 15px rgba(49, 105, 78, 0.2);
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white; /* Ensure title is white */
+  }
+  
+  /* The "Pending" Badge */
+  span {
+    background: rgba(255, 255, 255, 0.25); /* Lighter background */
+    color: white; /* Pure white text */
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+}
+
+.logoutButton {
+  background: white; /* White button for contrast */
+  color: #31694E;    /* Green text */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover { 
+    background: #e8f5e9; 
+    transform: translateY(-1px);
+  }
+}
+
+/* --- Grid Layout --- */
+.grid {
+  display: grid;
+  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+/* --- Order Card --- */
+.orderCard {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+  }
+
+  /* Status Borders */
+  &.status_CONFIRMED { border-top: 6px solid #BBC863; } /* Olive */
+  &.status_PACKING { border-top: 6px solid #31694E; }   /* Green */
+}
+
+.cardHeader {
+  padding: 20px;
+  border-bottom: 1px dashed #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #1f2937; /* Very Dark Grey */
+    font-weight: 800;
+  }
+}
+
+.statusBadge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+
+  &.pending { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+  &.packing { background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; }
+}
+
+/* --- Item Checklist --- */
+.itemList {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  max-height: 350px;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 15px;
+
+  &:last-child { border-bottom: none; }
+
+  img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    background: #fafafa;
+    padding: 2px;
+  }
+
+  .itemDetails {
+    flex-grow: 1;
+    
+    .name {
+      display: block;
+      font-weight: 700;
+      color: #111827; /* Almost Black */
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    
+    .sku {
+      color: #6b7280; /* Medium Grey */
+      font-size: 0.85rem;
+      font-family: monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  }
+
+  .qtyBadge {
+    background: #31694E;
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    min-width: 30px;
+    text-align: center;
+  }
+}
+
+/* --- Footer Actions --- */
+.cardFooter {
+  padding: 20px;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+  margin-top: auto;
+}
+
+.actionButton {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s;
+
+  &.start {
+    background-color: white;
+    border: 2px solid #31694E;
+    color: #31694E;
+    &:hover { background-color: #e8f5e9; }
+  }
+
+  &.finish {
+    background-color: #31694E;
+    color: white;
+    box-shadow: 0 4px 12px rgba(49, 105, 78, 0.3);
+    &:hover { background-color: #244f3a; }
+  }
+}
+
+/* --- Empty State --- */
+.emptyState {
+  text-align: center;
+  padding: 80px 20px;
+  grid-column: 1 / -1;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #e5e7eb;
+  margin-top: 40px;
+  
+  svg { 
+    font-size: 4rem; 
+    color: #d1d5db; 
+    margin-bottom: 20px; 
+  }
+
+  p { 
+    font-size: 1.3rem; 
+    font-weight: 600; 
+    color: #4b5563; /* Darker grey */
+    margin: 0; 
+  }
+}
