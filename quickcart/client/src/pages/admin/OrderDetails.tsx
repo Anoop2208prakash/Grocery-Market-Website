@@ -4,28 +4,28 @@ import apiClient from '../../services/apiClient';
 import { AxiosError } from 'axios';
 import { useToast } from '../../contexts/ToastContext';
 import styles from './OrderDetails.module.scss';
-import type { OrderStatus } from '@prisma/client';
 
-// Define the types for the order data
+// Define types
+type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PACKING' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
+
 interface OrderItem {
   id: string;
   quantity: number;
   price: number;
-  product: { name: string; sku: string };
+  product: { name: string; sku: string; imageUrl?: string };
 }
+
 interface Order {
   id: string;
   status: OrderStatus;
   totalPrice: number;
+  createdAt: string;
   user: { name: string; email: string };
   items: OrderItem[];
 }
 
-// The statuses an Admin can manually set
 const ADMIN_ORDER_STATUSES: OrderStatus[] = [
-  'PENDING',
-  'CONFIRMED',
-  'PACKING',
+  'PENDING', 'CONFIRMED', 'PACKING'
 ];
 
 const AdminOrderDetails = () => {
@@ -50,7 +50,6 @@ const AdminOrderDetails = () => {
         console.error(err);
         let msg = 'Failed to fetch order';
         if (err instanceof AxiosError) msg = err.response?.data?.message || msg;
-        
         setError(msg);
         showToast(msg, 'error');
       } finally {
@@ -71,70 +70,76 @@ const AdminOrderDetails = () => {
       setOrder(data);
       setStatus(data.status);
     } catch (err) {
-      console.error(err);
+      // FIX: Use the error object to log or get a specific message
+      console.error("Status update failed:", err); 
       let msg = 'Failed to update status';
       if (err instanceof AxiosError) {
         msg = err.response?.data?.message || msg;
-      } else if (err instanceof Error) {
-        msg = err.message;
       }
-      
-      setError(msg);
       showToast(msg, 'error');
     }
   };
 
-  if (loading) return <div>Loading order details...</div>;
-  if (error && !order) return <div style={{ color: 'red' }}>Error: {error}</div>;
+  const getImageUrl = (url?: string) => {
+    if (!url) return 'https://via.placeholder.com/60';
+    return url.startsWith('http') ? url : `http://localhost:5000${url}`;
+  };
+
+  if (loading) return <div style={{textAlign:'center', padding:'50px'}}>Loading details...</div>;
+  if (error && !order) return <div className={styles.container} style={{color:'red'}}>{error || 'Order not found'}</div>;
   
   // Guard against a fully null order
-  if (!order) return <div>Order not found.</div>;
+  if (!order) return <div className={styles.container}>Order not found.</div>;
 
   return (
-    <div className={styles.page}>
-      <Link to="/admin/orders">&larr; Back to Orders</Link>
-      <h1 style={{ wordBreak: 'break-all' }}>Order: {order.id}</h1>
-
-      {error && !loading && <div className={styles.error}>{error}</div>}
+    <div className={styles.container}>
+      <Link to="/admin/orders" className={styles.backLink}>&larr; Back to Orders</Link>
+      
+      <div className={styles.header}>
+        <h1>Order: <span>{order.id}</span></h1>
+        <span>Placed on: {new Date(order.createdAt).toLocaleString()}</span>
+      </div>
 
       <div className={styles.grid}>
-        <div className={styles.details}>
-          <h2>Order Items</h2>
-          <div className={styles.itemsList}>
-            {(order.items || []).map((item) => (
-              <div key={item.id} className={styles.item}>
-                <span>
-                  {/* vvv THIS IS THE FIX vvv */}
-                  {item.quantity} x {item.product?.name || 'Product Not Found'}
-                </span>
-                <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+        {/* LEFT COLUMN: ITEMS */}
+        <div className={styles.itemsCard}>
+          <h3>Order Items ({order.items?.length || 0})</h3>
+          {/* FIX: Add optional chaining here */}
+          {order.items?.map((item) => (
+            <div key={item.id} className={styles.itemRow}>
+              <img src={getImageUrl(item.product?.imageUrl)} alt={item.product?.name} />
+              <div className={styles.itemInfo}>
+                <h4>{item.product?.name || 'Unknown Product'}</h4>
+                <p>SKU: {item.product?.sku || 'N/A'} &bull; Qty: {item.quantity}</p>
               </div>
-            ))}
-          </div>
-          <hr />
-          <div className={styles.item}>
-            <strong>Total</strong>
-            <strong>₹{order.totalPrice.toFixed(2)}</strong>
+              <span className={styles.itemTotal}>₹{(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+          ))}
+          <div className={styles.totalRow}>
+            <span>Total</span>
+            <span>₹{order.totalPrice.toFixed(2)}</span>
           </div>
         </div>
 
-        <div className={styles.sidebar}>
-          <div className={styles.summary}>
-            <h3>Customer</h3>
-            {/* vvv THIS IS THE FIX vvv */}
-            <p>{order.user?.name || 'Customer Not Found'}</p>
-            <p>{order.user?.email || 'No Email'}</p>
+        {/* RIGHT COLUMN: INFO */}
+        <div>
+          <div className={styles.infoCard}>
+            <h4>Customer Details</h4>
+            <p>{order.user?.name || 'Guest Customer'}</p>
+            <p className={styles.email}>{order.user?.email || 'No Email'}</p>
           </div>
 
-          <div className={styles.actions} style={{ marginTop: 20 }}>
-            <h3>Update Status</h3>
+          <div className={styles.statusCard}>
+            <h4>Update Status</h4>
             
             {ADMIN_ORDER_STATUSES.includes(order.status) ? (
               <>
-                <select
-                  value={status}
+                <p style={{marginBottom: '10px'}}>Current: <strong>{order.status}</strong></p>
+                <select 
+                  value={status} 
                   onChange={(e) => setStatus(e.target.value as OrderStatus)}
                   className={styles.statusSelect}
+                  style={{ marginBottom: '10px' }}
                 >
                   {ADMIN_ORDER_STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -142,7 +147,10 @@ const AdminOrderDetails = () => {
                     </option>
                   ))}
                 </select>
-                <button className={styles.saveButton} onClick={handleStatusUpdate}>
+                <button 
+                  className={styles.saveButton}
+                  onClick={handleStatusUpdate}
+                >
                   Save Status
                 </button>
               </>

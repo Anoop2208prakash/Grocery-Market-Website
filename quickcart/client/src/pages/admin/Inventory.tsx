@@ -2,21 +2,10 @@ import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
 import styles from './Inventory.module.scss';
-import { DataGrid, type ColumnDef } from '../../components/common/DataGrid';
 import { useToast } from '../../contexts/ToastContext';
 import DeleteModal from '../../components/common/DeleteModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faFileCsv, faSpinner } from '@fortawesome/free-solid-svg-icons';
-
-// Interfaces
-interface ProductRow {
-  id: string;
-  sku: string;
-  name: string;
-  category: string;
-  price: string;
-  stock: number;
-}
+import { faPlus, faFileCsv, faSpinner, faBoxOpen, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 interface Product {
   id: string;
@@ -28,19 +17,15 @@ interface Product {
 }
 
 const AdminInventory = () => {
-  const [products, setProducts] = useState<ProductRow[]>([]);
-  
-  // --- 1. Loading State ---
-  const [loading, setLoading] = useState(true); 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  // --- CSV Upload State ---
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Modal State ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
@@ -48,15 +33,7 @@ const AdminInventory = () => {
     try {
       setLoading(true);
       const { data } = await apiClient.get<Product[]>('/products');
-      const formattedData = data.map(p => ({
-        id: p.id,
-        sku: p.sku,
-        name: p.name,
-        category: p.category?.name || 'Uncategorized',
-        price: `₹${p.price.toFixed(2)}`,
-        stock: p.totalStock,
-      }));
-      setProducts(formattedData);
+      setProducts(data);
       setError('');
     } catch (err) {
       console.error(err);
@@ -114,43 +91,12 @@ const AdminInventory = () => {
     }
   };
 
-  const columns: ColumnDef<ProductRow>[] = [
-    { header: 'SKU', accessorKey: 'sku' },
-    { header: 'Name', accessorKey: 'name' },
-    { header: 'Category', accessorKey: 'category' },
-    { header: 'Price', accessorKey: 'price' },
-    { header: 'Stock', accessorKey: 'stock' },
-    {
-      header: 'Actions',
-      cell: (row) => (
-        <div className={styles.actionButtons}>
-          <button
-            onClick={() => navigate(`/admin/inventory/edit/${row.id}`)}
-            className={styles.editButton}
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => onDeleteClick(row.id)} 
-            className={styles.deleteButton}
-          >
-            Delete
-          </button>
-        </div>
-      ),
-    },
-  ];
-
-  // --- 2. FIX: Use the 'loading' state here ---
-  if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center' }}>Loading inventory...</div>;
-  }
-  // --- END FIX ---
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading inventory...</div>;
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Manage Inventory</h1>
+        <h1><FontAwesomeIcon icon={faBoxOpen} /> Manage Inventory</h1>
         
         <div className={styles.actions}>
           <input 
@@ -177,14 +123,51 @@ const AdminInventory = () => {
 
       {error && <div style={{ color: 'red', marginBottom: '15px' }}>Error: {error}</div>}
 
-      <div className={styles.tableWrapper}>
-        <DataGrid
-          columns={columns}
-          data={products}
-          emptyTitle="No Products Found"
-          emptyMessage="Get started by adding your first product to the inventory."
-        />
+      {/* --- New Card Grid View --- */}
+      <div className={styles.gridList}>
+        {products.length === 0 ? (
+          <div style={{textAlign: 'center', padding: '40px', color: '#666'}}>
+            No products found. Add one to get started!
+          </div>
+        ) : (
+          products.map(product => (
+            <div key={product.id} className={styles.productCard}>
+              
+              <div className={styles.productInfo}>
+                <h4>{product.name}</h4>
+                <div>
+                  <span className={styles.sku}>{product.sku}</span>
+                  <span className={styles.category}>{product.category?.name || 'Uncategorized'}</span>
+                </div>
+              </div>
+
+              <div style={{display:'flex', alignItems:'center'}}>
+                <div className={styles.productMeta}>
+                  <div className={styles.price}>₹{product.price.toFixed(2)}</div>
+                  <div className={styles.stock}>Stock: <span>{product.totalStock}</span></div>
+                </div>
+
+                <div className={styles.cardActions}>
+                  <button 
+                    onClick={() => navigate(`/admin/inventory/edit/${product.id}`)}
+                    className={styles.editBtn}
+                  >
+                    <FontAwesomeIcon icon={faPen} /> Edit
+                  </button>
+                  <button 
+                    onClick={() => onDeleteClick(product.id)}
+                    className={styles.deleteBtn}
+                  >
+                    <FontAwesomeIcon icon={faTrash} /> Remove
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          ))
+        )}
       </div>
+      {/* --- End Card Grid --- */}
 
       <DeleteModal 
         isOpen={isModalOpen}

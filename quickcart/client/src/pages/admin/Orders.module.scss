@@ -1,47 +1,152 @@
 /* client/src/pages/admin/Orders.module.scss */
 
-.pageHeader {
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 
   h2 {
     margin: 0;
     color: #31694E; /* Dark Green */
-    font-size: 1.8rem;
-    border-bottom: 3px solid #F0E491; /* Cream Accent */
-    padding-bottom: 10px;
+    font-size: 2rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+}
+
+/* --- ORDER LIST GRID --- */
+.orderList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.orderCard {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    border-color: #BBC863; /* Olive highlight on hover */
+  }
+}
+
+/* Top section of card */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed #eee;
+
+  h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 700;
+  }
+
+  .orderId {
+    display: block;
+    font-size: 0.85rem;
+    color: #888;
+    font-family: monospace;
+    margin-top: 4px;
+  }
+}
+
+/* Middle section */
+.cardBody {
+  margin-bottom: 20px;
+  
+  .infoRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: #555;
+
+    span:first-child {
+      color: #888;
+      font-weight: 500;
+    }
+    span:last-child {
+      font-weight: 600;
+      color: #333;
+    }
+  }
+
+  .total {
+    font-size: 1.2rem;
+    color: #31694E;
+    font-weight: 800;
+  }
+}
+
+/* Bottom section */
+.cardActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
 }
 
 .viewButton {
-  padding: 8px 16px;
-  background-color: #31694E; /* Dark Green */
+  background-color: #31694E;
   color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 0.9rem;
   transition: background 0.2s;
-
+  
   &:hover {
-    background-color: #658C58; /* Medium Green */
+    background-color: #244f3a;
   }
 }
 
+/* Status Badges */
 .statusBadge {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  
-  &.pending { background-color: #fef9c3; color: #854d0e; }
-  &.confirmed { background-color: #dbeafe; color: #1e40af; }
-  &.packing { background-color: #e0e7ff; color: #3730a3; }
-  &.out_for_delivery { background-color: #f3e8ff; color: #6b21a8; }
-  &.delivered { background-color: #dcfce7; color: #166534; }
-  &.cancelled { background-color: #fee2e2; color: #991b1b; }
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+}
+
+.status_PENDING { background-color: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.status_CONFIRMED { background-color: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.status_PACKING { background-color: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
+.status_OUT_FOR_DELIVERY { background-color: #fefce8; color: #854d0e; border-color: #fef08a; }
+.status_DELIVERED { background-color: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.status_CANCELLED { background-color: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+.emptyState {
+  text-align: center;
+  padding: 60px;
+  color: #999;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #eee;
 }
