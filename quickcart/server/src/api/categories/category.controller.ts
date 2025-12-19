@@ -9,7 +9,7 @@ import prisma from '../../lib/prisma';
  */
 export const getCategories = asyncHandler(async (req: Request, res: Response) => {
   const categories = await prisma.category.findMany({
-    select: { id: true, name: true } // Only need names for admin lists
+    select: { id: true, name: true }
   });
   res.json(categories);
 });
@@ -22,33 +22,41 @@ export const getCategories = asyncHandler(async (req: Request, res: Response) =>
 export const getCategoriesWithProducts = asyncHandler(async (req: Request, res: Response) => {
   const categoriesWithProducts = await prisma.category.findMany({
     include: {
-      // Include top 10 products in this category
       products: {
         take: 10,
+        include: { subCategory: true }
       },
     },
   });
 
-  // Filter out empty categories
   const nonEmptyCategories = categoriesWithProducts.filter(cat => cat.products.length > 0);
-  
   res.json(nonEmptyCategories);
 });
 
 /**
- * @desc    Get a single category by ID (Used by old "See All" button)
+ * @desc    Get a single category by ID OR Name
  * @route   GET /api/categories/:id
  * @access  Public
  */
 export const getCategoryById = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const category = await prisma.category.findUnique({
-    where: { id },
+  // --- FIX: Search by ID OR Name ---
+  const category = await prisma.category.findFirst({
+    where: {
+      OR: [
+        { id: id },    // Check if param matches ID
+        { name: id }   // Check if param matches Name (e.g. "Vegetables")
+      ]
+    },
     include: {
-      products: true, // Get all products in this category
+      subCategories: true,
+      products: {
+        include: { subCategory: true }
+      },
     },
   });
+  // ---------------------------------
 
   if (!category) {
     res.status(404);
@@ -59,7 +67,7 @@ export const getCategoryById = asyncHandler(async (req: Request, res: Response) 
 });
 
 /**
- * @desc    Get a single category by NAME and all its products
+ * @desc    Get a single category by NAME
  * @route   GET /api/categories/name/:name
  * @access  Public
  */
@@ -67,14 +75,17 @@ export const getCategoryByName = asyncHandler(async (req: Request, res: Response
   const { name } = req.params;
 
   const category = await prisma.category.findUnique({
-    where: { name: name }, // Find by name
+    where: { name: name },
     include: {
-      products: true, // Get all products in this category
+      subCategories: true,
+      products: {
+        include: { subCategory: true }
+      },
     },
   });
 
   if (!category) {
-    res.status(4404);
+    res.status(404);
     throw new Error('Category not found');
   }
 

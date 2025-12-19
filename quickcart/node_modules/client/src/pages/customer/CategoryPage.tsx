@@ -1,78 +1,82 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
-import { AxiosError } from 'axios';
-import ProductCard from '../../components/common/ProductCard';
 import styles from './CategoryPage.module.scss';
+import ProductCard from '../../components/common/ProductCard';
+
+// Interfaces
+interface SubCategory {
+  id: string;
+  name: string;
+}
 
 interface Product {
   id: string;
   name: string;
   price: number;
   imageUrl?: string;
+  subCategoryId?: string; // We use this to filter
+  // ... other fields
 }
 
-interface Category {
+interface CategoryData {
   id: string;
   name: string;
+  subCategories: SubCategory[];
   products: Product[];
 }
 
 const CategoryPage = () => {
-  const [category, setCategory] = useState<Category | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
-  const { name } = useParams(); // <-- 1. Get 'name' from URL, not 'id'
+  const { id } = useParams<{ id: string }>(); // This is the Category Name (e.g., 'Vegetables')
+  const [data, setData] = useState<CategoryData | null>(null);
+  const [activeSub, setActiveSub] = useState<string>('ALL');
 
   useEffect(() => {
-    if (!name) {
-      setError('No category specified.');
-      setLoading(false);
-      return;
-    }
+    apiClient.get(`/categories/${id}`).then(res => {
+      setData(res.data);
+    }).catch(console.error);
+  }, [id]);
 
-    const fetchCategoryProducts = async () => {
-      try {
-        setLoading(true);
-        // --- 2. Fetch from the new '/api/categories/name/' endpoint ---
-        const { data } = await apiClient.get<Category>(`/categories/name/${name}`);
-        setCategory(data);
-        setError('');
-      } catch (err) {
-        console.error(err);
-        let message = 'Failed to fetch category';
-        if (err instanceof AxiosError) message = err.response?.data?.message || message;
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (!data) return <div>Loading...</div>;
 
-    fetchCategoryProducts();
-  }, [name]); // <-- 3. Re-run if the name changes
-
-  if (loading) return <div className={styles.loading}>Loading...</div>;
-  if (error) return <div className={styles.error}>{error}</div>;
+  // --- FILTER LOGIC ---
+  const filteredProducts = activeSub === 'ALL' 
+    ? data.products 
+    : data.products.filter(p => p.subCategoryId === activeSub);
 
   return (
-    <div>
-      <h1 className={styles.title}>
-        {category?.name || 'Category'}
-      </h1>
-      
-      {!category || category.products.length === 0 ? (
-        <div className={styles.noResults}>No products found in this category.</div>
-      ) : (
-        <div className={styles.grid}>
-          {category.products.map(product => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-            />
-          ))}
-        </div>
-      )}
+    <div className={styles.container}>
+      <h1 className={styles.title}>{data.name}</h1>
+
+      {/* --- SUB-CATEGORY PILLS --- */}
+      <div className={styles.subCategoryNav}>
+        <button 
+          className={`${styles.pill} ${activeSub === 'ALL' ? styles.active : ''}`}
+          onClick={() => setActiveSub('ALL')}
+        >
+          All
+        </button>
+        {data.subCategories.map(sub => (
+          <button 
+            key={sub.id}
+            className={`${styles.pill} ${activeSub === sub.id ? styles.active : ''}`}
+            onClick={() => setActiveSub(sub.id)}
+          >
+            {sub.name}
+          </button>
+        ))}
+      </div>
+
+      {/* --- PRODUCT GRID --- */}
+      <div className={styles.productGrid}>
+        {filteredProducts.length > 0 ? (
+           filteredProducts.map(product => (
+             <ProductCard key={product.id} product={product} />
+           ))
+        ) : (
+           <p>No products found in this subcategory.</p>
+        )}
+      </div>
     </div>
   );
 };

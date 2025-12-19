@@ -1,24 +1,38 @@
-/* We can re-use the styles from SearchPage */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px 0;
-}
-
-.loading,
-.error,
-.noResults {
-  text-align: center;
-  padding: 50px;
-  font-size: 1.2rem;
-  color: #666;
-}
-
-.title {
-  color: #31694E; /* Dark Green */
-  font-size: 2.2rem;
-  border-bottom: 3px solid #F0E491; /* Cream */
-  padding-bottom: 10px;
+/* Add these styles */
+.subCategoryNav {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 0 20px 0;
   margin-bottom: 20px;
+
+  /* Hide scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.pill {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-weight: 600;
+  color: #555;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+
+  &.active {
+    background: #31694E;
+    color: white;
+    border-color: #31694E;
+  }
 }

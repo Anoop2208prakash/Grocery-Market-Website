@@ -38,7 +38,7 @@ async function main() {
   });
   console.log(`Created driver user: ${driverUser.email}`);
 
-  // --- NEW: PACKER ---
+  // Packer
   const packerUser = await prisma.user.upsert({
     where: { email: 'packer@quickcart.com' },
     update: {},
@@ -52,42 +52,73 @@ async function main() {
   console.log(`Created packer user: ${packerUser.email}`);
   // -------------------
 
-  // --- 2. Create ALL 8 Categories ---
-  const catVeg = await prisma.category.upsert({
-    where: { name: 'Vegetables' },
-    update: {}, create: { name: 'Vegetables' },
-  });
-  const catFruit = await prisma.category.upsert({
-    where: { name: 'Fruits' },
-    update: {}, create: { name: 'Fruits' },
-  });
-  const catDairy = await prisma.category.upsert({
-    where: { name: 'Dairy & Eggs' },
-    update: {}, create: { name: 'Dairy & Eggs' },
-  });
-  const catBakery = await prisma.category.upsert({
-    where: { name: 'Bakery' },
-    update: {}, create: { name: 'Bakery' },
-  });
-  const catMeat = await prisma.category.upsert({
-    where: { name: 'Meat & Fish' },
-    update: {}, create: { name: 'Meat & Fish' },
-  });
-  const catBev = await prisma.category.upsert({
-    where: { name: 'Beverages' },
-    update: {}, create: { name: 'Beverages' },
-  });
-  const catSnacks = await prisma.category.upsert({
-    where: { name: 'Snacks' },
-    update: {}, create: { name: 'Snacks' },
-  });
-  const catPantry = await prisma.category.upsert({
-    where: { name: 'Pantry' },
-    update: {}, create: { name: 'Pantry' },
-  });
-  console.log('Created all 8 categories...');
+  // --- 2. Create Categories & Subcategories ---
+  const categoriesData = [
+    { 
+      name: 'Vegetables', 
+      subs: ['Leafy Greens', 'Root Vegetables', 'Exotic', 'Organic'] 
+    },
+    { 
+      name: 'Fruits', 
+      subs: ['Citrus', 'Berries', 'Tropical', 'Seasonal'] 
+    },
+    { 
+      name: 'Dairy & Eggs', 
+      subs: ['Milk', 'Cheese', 'Butter', 'Eggs', 'Yogurt'] 
+    },
+    { 
+      name: 'Bakery', 
+      subs: ['Bread', 'Pastries', 'Cakes', 'Cookies'] 
+    },
+    { 
+      name: 'Meat & Fish', 
+      subs: ['Chicken', 'Red Meat', 'Seafood', 'Frozen'] 
+    },
+    { 
+      name: 'Beverages', 
+      subs: ['Soda', 'Juice', 'Water', 'Tea', 'Coffee'] 
+    },
+    { 
+      name: 'Snacks', 
+      subs: ['Chips', 'Chocolates', 'Nuts', 'Biscuits'] 
+    },
+    { 
+      name: 'Pantry', 
+      subs: ['Rice', 'Pasta', 'Spices', 'Oil', 'Sauces'] 
+    },
+  ];
 
-  // --- 3. Create Products (Uncomment if needed) ---
+  for (const catData of categoriesData) {
+    // Create/Get Category
+    const category = await prisma.category.upsert({
+      where: { name: catData.name },
+      update: {},
+      create: { name: catData.name },
+    });
+
+    console.log(`Created category: ${category.name}`);
+
+    // Create Subcategories for this Category
+    for (const subName of catData.subs) {
+      // Check if subcategory exists to avoid duplicates
+      const existingSub = await prisma.subCategory.findFirst({
+        where: { name: subName, categoryId: category.id }
+      });
+
+      if (!existingSub) {
+        await prisma.subCategory.create({
+          data: {
+            name: subName,
+            categoryId: category.id
+          }
+        });
+        console.log(` - Added subcategory: ${subName}`);
+      }
+    }
+  }
+  console.log('Categories and Subcategories setup complete.');
+
+  // --- 3. Create Products (Optional - You can uncomment/add logic here) ---
   // await prisma.product.upsert({ ... }); 
   
   // --- 4. CREATE THE DARK STORE ---
