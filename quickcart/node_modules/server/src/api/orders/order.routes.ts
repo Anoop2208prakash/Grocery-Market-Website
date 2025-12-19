@@ -19,23 +19,23 @@ const router = express.Router();
 router.route('/').post(protect, createOrder);
 router.route('/myorders').get(protect, getMyOrders);
 
-// --- Admin Revenue ---
-// FIXED: This must be defined before any /:id routes to prevent routing conflicts
+// --- Admin Revenue & Driver Availability ---
+// Defined early to avoid conflicts with generic /:id routes
 router.route('/revenue').get(protect, admin, getRevenueStats);
-
-// --- Driver Routes ---
-// FIXED: This must also be before /:id
-router.route('/available').get(protect, getAvailableOrders); 
+router.route('/available').get(protect, getAvailableOrders);
 
 // --- Admin General ---
 router.route('/').get(protect, admin, getOrders);
-router.route('/:id/status').put(protect, admin, updateOrderStatus);
 
-// --- Single Order Operations ---
-// These generic ID routes must always come LAST
-router.route('/:id').get(protect, getOrderById);
+// --- Specific Order Operations ---
+// FIXED: Moved these ABOVE the generic /:id route so they are correctly recognized
+router.route('/:id/deliver').put(protect, admin, updateOrderToDelivered);
+router.route('/:id/status').put(protect, admin, updateOrderStatus);
 router.route('/:id/pay').put(protect, updateOrderToPaid);
 router.route('/:id/cancel').put(protect, cancelOrder);
-router.route('/:id/deliver').put(protect, admin, updateOrderToDelivered);
+
+// --- Single Order Fetching ---
+// Generic ID routes must always come LAST
+router.route('/:id').get(protect, getOrderById);
 
 export default router;
