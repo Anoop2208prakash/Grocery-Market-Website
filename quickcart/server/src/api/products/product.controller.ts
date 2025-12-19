@@ -240,7 +240,7 @@ export const getBuyAgainProducts = asyncHandler(async (req: AuthRequest, res: Re
     where: {
       order: {
         userId: userId,
-        status: { in: ['DELIVERED', 'OUT_FOR_DELIVERY', 'CONFIRMED'] }
+        status: { in: ['DELIVERED', 'SHIPPED', 'CONFIRMED'] }
       }
     },
     distinct: ['productId'],

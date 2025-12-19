@@ -7,7 +7,7 @@ interface CartItem {
   price: number;
   imageUrl?: string;
   quantity: number;
-  substitution: 'REFUND' | 'REPLACE'; // <-- NEW FIELD
+  substitution: 'REFUND' | 'REPLACE';
 }
 
 // Helper type for adding items (quantity & substitution are handled internally)
@@ -19,9 +19,7 @@ interface CartContextType {
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
-  // --- vvv NEW FUNCTION vvv ---
   updateSubstitution: (productId: string, policy: 'REFUND' | 'REPLACE') => void;
-  // ----------------------------
   clearCart: () => void;
   addItems: (products: Product[]) => void;
   itemCount: number;
@@ -110,7 +108,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // --- vvv NEW FUNCTION IMPLEMENTATION vvv ---
   const updateSubstitution = (productId: string, policy: 'REFUND' | 'REPLACE') => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
@@ -118,11 +115,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       )
     );
   };
-  // --- ^^^ END NEW FUNCTION ^^^ ---
 
+  // --- FIX APPLIED HERE ---
   const clearCart = () => {
     setCartItems([]);
+    // We explicitly remove ONLY the cart key. 
+    // IMPORTANT: Do NOT use localStorage.clear() here, or it will delete auth tokens.
+    localStorage.removeItem('quickcart_cart');
   };
+  // -----------------------
 
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
@@ -133,7 +134,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         addToCart,
         removeFromCart,
         updateQuantity,
-        updateSubstitution, // <-- Export it
+        updateSubstitution,
         clearCart,
         addItems,
         itemCount,

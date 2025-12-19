@@ -4,17 +4,20 @@ import prisma from '../../lib/prisma';
 import type { AuthRequest } from '../auth/auth.middleware';
 
 /**
- * @desc    Get available orders for delivery (Status = READY_FOR_PICKUP)
+ * @desc    Get available orders for delivery
  * @route   GET /api/delivery/available
  * @access  Private/Driver
  */
 export const getAvailableOrders = asyncHandler(async (req: AuthRequest, res: Response) => {
   const orders = await prisma.order.findMany({
     where: {
-      // --- FIX: Driver only sees READY orders ---
+      // FIX: Ensure this matches the exact status in your Admin Panel
       status: 'READY_FOR_PICKUP', 
-      // -----------------------------------------
-      delivery: { is: null },
+      // Ensure the order doesn't already have an active delivery record
+      OR: [
+        { delivery: null },
+        { delivery: { status: 'PENDING' } }
+      ]
     },
     include: {
       user: { select: { name: true, phone: true } },
@@ -31,8 +34,6 @@ export const getAvailableOrders = asyncHandler(async (req: AuthRequest, res: Res
 
 /**
  * @desc    Get orders currently assigned to this driver
- * @route   GET /api/delivery/my-deliveries
- * @access  Private/Driver
  */
 export const getMyDeliveries = asyncHandler(async (req: AuthRequest, res: Response) => {
   const driverId = req.user?.id;
@@ -45,7 +46,7 @@ export const getMyDeliveries = asyncHandler(async (req: AuthRequest, res: Respon
     include: {
       order: {
         include: {
-          user: { select: { name: true, phone: true } }, // removed 'addresses' typo if present in other versions, staying safe with user select
+          user: { select: { name: true, phone: true } },
           address: true,
         },
       },
@@ -56,31 +57,24 @@ export const getMyDeliveries = asyncHandler(async (req: AuthRequest, res: Respon
 });
 
 /**
- * @desc    Get Driver Stats (Earnings = 20% of total order value)
- * @route   GET /api/delivery/stats
- * @access  Private/Driver
+ * @desc    Get Driver Stats
  */
 export const getDriverStats = asyncHandler(async (req: AuthRequest, res: Response) => {
   const driverId = req.user?.id;
 
-  // 1. Get ALL completed deliveries for this driver
   const allDeliveries = await prisma.delivery.findMany({
     where: {
       driverId: driverId,
       status: 'DELIVERED',
     },
     include: {
-      order: {
-        select: { totalPrice: true } // We need the price to calc commission
-      }
+      order: { select: { totalPrice: true } }
     }
   });
 
-  // 2. Calculate Total Lifetime Earnings (20% of sum)
   const totalOrderValue = allDeliveries.reduce((acc, delivery) => acc + delivery.order.totalPrice, 0);
   const totalEarnings = totalOrderValue * 0.20;
 
-  // 3. Get TODAY'S completed deliveries
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
@@ -88,32 +82,25 @@ export const getDriverStats = asyncHandler(async (req: AuthRequest, res: Respons
     where: {
       driverId: driverId,
       status: 'DELIVERED',
-      deliveredAt: {
-        gte: todayStart
-      }
+      deliveredAt: { gte: todayStart }
     },
     include: {
-      order: {
-        select: { totalPrice: true }
-      }
+      order: { select: { totalPrice: true } }
     }
   });
 
-  // 4. Calculate Today's Earnings (20% of sum)
   const todayOrderValue = todayDeliveries.reduce((acc, delivery) => acc + delivery.order.totalPrice, 0);
   const todayEarnings = todayOrderValue * 0.20;
 
   res.json({
     completedOrders: allDeliveries.length,
-    totalEarnings: Math.round(totalEarnings), // Round to nearest integer
+    totalEarnings: Math.round(totalEarnings),
     todayEarnings: Math.round(todayEarnings),
   });
 });
 
 /**
  * @desc    Driver accepts an order
- * @route   POST /api/delivery/:orderId/accept
- * @access  Private/Driver
  */
 export const acceptOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { orderId } = req.params;
@@ -126,19 +113,27 @@ export const acceptOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     include: { delivery: true },
   });
 
-  if (!order || order.delivery) {
+  // Allow acceptance if no delivery exists OR existing delivery is still PENDING
+  if (!order || (order.delivery && order.delivery.status !== 'PENDING')) {
     res.status(400);
     throw new Error('Order not available');
   }
 
   const result = await prisma.$transaction([
-    prisma.delivery.create({
-      data: {
-        orderId: orderId,
+    // Update or Create delivery record
+    prisma.delivery.upsert({
+      where: { orderId: orderId },
+      update: {
         driverId: driverId,
         status: 'OUT_FOR_DELIVERY',
         pickedUpAt: new Date(),
       },
+      create: {
+        orderId: orderId,
+        driverId: driverId,
+        status: 'OUT_FOR_DELIVERY',
+        pickedUpAt: new Date(),
+      }
     }),
     prisma.order.update({
       where: { id: orderId },
@@ -151,8 +146,6 @@ export const acceptOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
 /**
  * @desc    Mark order as delivered
- * @route   PUT /api/delivery/:deliveryId/complete
- * @access  Private/Driver
  */
 export const completeDelivery = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { deliveryId } = req.params;

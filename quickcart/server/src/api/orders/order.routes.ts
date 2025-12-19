@@ -1,42 +1,41 @@
 import express from 'express';
 import {
-  getOrders,
   createOrder,
   getOrderById,
-  updateOrderStatus,
   getMyOrders,
-  getOrderStats,
-  getOrderCountStats,
+  getOrders,
+  getRevenueStats,
+  updateOrderToPaid,
+  updateOrderToDelivered,
   cancelOrder,
+  updateOrderStatus,
+  getAvailableOrders,
 } from './order.controller';
 import { protect, admin } from '../auth/auth.middleware';
 
 const router = express.Router();
 
-// POST /api/orders - Any logged-in user can create an order
-// GET  /api/orders - Only admins can get all orders
-router
-  .route('/')
-  .post(protect, createOrder)
-  .get(protect, admin, getOrders);
-
-// --- Routes for dashboard stats ---
-router.route('/stats').get(protect, admin, getOrderStats);
-router.route('/stats/count').get(protect, admin, getOrderCountStats); // <-- 2. Add this route
-
-// GET /api/orders/myorders - Get logged-in user's orders
-// This MUST be before the '/:id' route
+// --- Public/Customer ---
+router.route('/').post(protect, createOrder);
 router.route('/myorders').get(protect, getMyOrders);
 
-// GET /api/orders/:id - Get single order (Admin only)
-router
-  .route('/:id')
-  .get(protect, admin, getOrderById);
+// --- Admin Revenue ---
+// FIXED: This must be defined before any /:id routes to prevent routing conflicts
+router.route('/revenue').get(protect, admin, getRevenueStats);
 
-// PUT /api/orders/:id/status - Update order status (Admin only)
-router
-  .route('/:id/status')
-  .put(protect, admin, updateOrderStatus);
+// --- Driver Routes ---
+// FIXED: This must also be before /:id
+router.route('/available').get(protect, getAvailableOrders); 
+
+// --- Admin General ---
+router.route('/').get(protect, admin, getOrders);
+router.route('/:id/status').put(protect, admin, updateOrderStatus);
+
+// --- Single Order Operations ---
+// These generic ID routes must always come LAST
+router.route('/:id').get(protect, getOrderById);
+router.route('/:id/pay').put(protect, updateOrderToPaid);
 router.route('/:id/cancel').put(protect, cancelOrder);
+router.route('/:id/deliver').put(protect, admin, updateOrderToDelivered);
 
 export default router;

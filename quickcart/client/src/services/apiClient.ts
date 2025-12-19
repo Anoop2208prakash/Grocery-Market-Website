@@ -1,40 +1,43 @@
 import axios from 'axios';
 
+// Create Axios instance
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'http://localhost:5000/api', // Ensure this matches your backend URL
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// 1. Add a Request Interceptor to attach the Token
+// --- 1. Request Interceptor: Attach Token ---
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token'); // Or whatever key you use
+    // Try to get token from localStorage
+    // Check if your AuthContext saves it as 'token' or 'userToken'
+    const token = localStorage.getItem('token'); 
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// 2. Add a Response Interceptor to handle 401 (Not Authorized)
+// --- 2. Response Interceptor: Handle Auth Errors ---
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Only logout if we get a 401 (Unauthorized) from the server
     if (error.response && error.response.status === 401) {
-      // Token is invalid or user doesn't exist
-      console.error('Session expired or invalid. Logging out...');
+      console.warn('Unauthorized access - logging out...');
       
-      // Clear storage
+      // Optional: Clear storage and redirect ONLY if it's a generic auth error
+      // (You might want to disable this while debugging)
       localStorage.removeItem('token');
-      localStorage.removeItem('userInfo'); 
-      
-      // Redirect to login (optional, or let the AuthContext handle it)
-      if (window.location.pathname !== '/auth/login') {
-        window.location.href = '/auth/login';
-      }
+      localStorage.removeItem('user');
+      window.location.href = '/auth/login';
     }
     return Promise.reject(error);
   }
